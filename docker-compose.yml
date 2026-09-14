@@ -8,7 +8,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -25,7 +29,11 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -42,7 +50,11 @@ services:
     ports:
       - "8002:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -59,7 +71,11 @@ services:
     ports:
       - "8003:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -76,7 +92,11 @@ services:
     ports:
       - "8004:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -93,7 +113,11 @@ services:
     ports:
       - "8005:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -110,7 +134,11 @@ services:
     ports:
       - "8006:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -127,7 +155,11 @@ services:
     ports:
       - "8007:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
@@ -144,7 +176,11 @@ services:
     ports:
       - "8008:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
