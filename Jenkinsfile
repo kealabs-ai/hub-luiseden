@@ -150,12 +150,10 @@ pipeline {
             echo '❌ Falha no deploy HubLuisEden!'
         }
         always {
-            node('built-in') {
-                sh '''
-                    echo "▶ Estado final dos containers:"
-                    /var/jenkins_home/docker ps --filter "name=hubluiseden" --filter "name=eden-svc-" || true
-                '''
-            }
+            sh '''
+                echo "▶ Estado final dos containers:"
+                /var/jenkins_home/docker ps --filter "name=hubluiseden" --filter "name=eden-svc-" || true
+            '''
         }
     }
 }
