@@ -1,0 +1,160 @@
+version: '3.8'
+
+networks:
+  easypanel:
+    external: true
+  eden-internal:
+    driver: bridge
+
+x-healthcheck: &default-healthcheck
+  test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\")' || exit 1"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+x-common: &common
+  environment:
+    - SECRET_KEY=${SECRET_KEY}
+    - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+    - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+    - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+    - luis_ed_DB_USER=${luis_ed_DB_USER}
+    - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+  networks:
+    - easypanel
+    - eden-internal
+  restart: unless-stopped
+
+services:
+  eden-svc-auth:
+    <<: *common
+    build: ./svc-auth
+    image: luiseden/svc-auth:latest
+    healthcheck: *default-healthcheck
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-auth.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/auth`)"
+      - "traefik.http.routers.eden-auth.entrypoints=https"
+      - "traefik.http.routers.eden-auth.tls=true"
+      - "traefik.http.routers.eden-auth.service=eden-auth"
+      - "traefik.http.services.eden-auth.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-auth.middlewares=eden-cors"
+      - "traefik.http.routers.eden-auth.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://luiseden.com.br,https://www.luiseden.com.br"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
+
+  eden-svc-catalogo:
+    <<: *common
+    build: ./svc-catalogo
+    image: luiseden/svc-catalogo:latest
+    healthcheck: *default-healthcheck
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-catalogo.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/catalogo`)"
+      - "traefik.http.routers.eden-catalogo.entrypoints=https"
+      - "traefik.http.routers.eden-catalogo.tls=true"
+      - "traefik.http.routers.eden-catalogo.service=eden-catalogo"
+      - "traefik.http.services.eden-catalogo.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-catalogo.middlewares=eden-cors"
+      - "traefik.http.routers.eden-catalogo.priority=100"
+
+  eden-svc-vendas:
+    <<: *common
+    build: ./svc-vendas
+    image: luiseden/svc-vendas:latest
+    healthcheck: *default-healthcheck
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-vendas.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/vendas`)"
+      - "traefik.http.routers.eden-vendas.entrypoints=https"
+      - "traefik.http.routers.eden-vendas.tls=true"
+      - "traefik.http.routers.eden-vendas.service=eden-vendas"
+      - "traefik.http.services.eden-vendas.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-vendas.middlewares=eden-cors"
+      - "traefik.http.routers.eden-vendas.priority=100"
+
+  eden-svc-financeiro:
+    <<: *common
+    build: ./svc-financeiro
+    image: luiseden/svc-financeiro:latest
+    healthcheck: *default-healthcheck
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-financeiro.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/financeiro`)"
+      - "traefik.http.routers.eden-financeiro.entrypoints=https"
+      - "traefik.http.routers.eden-financeiro.tls=true"
+      - "traefik.http.routers.eden-financeiro.service=eden-financeiro"
+      - "traefik.http.services.eden-financeiro.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-financeiro.middlewares=eden-cors"
+      - "traefik.http.routers.eden-financeiro.priority=100"
+
+  eden-svc-orcamentos:
+    <<: *common
+    build: ./svc-orcamentos
+    image: luiseden/svc-orcamentos:latest
+    healthcheck: *default-healthcheck
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-orcamentos.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/orcamentos`)"
+      - "traefik.http.routers.eden-orcamentos.entrypoints=https"
+      - "traefik.http.routers.eden-orcamentos.tls=true"
+      - "traefik.http.routers.eden-orcamentos.service=eden-orcamentos"
+      - "traefik.http.services.eden-orcamentos.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-orcamentos.middlewares=eden-cors"
+      - "traefik.http.routers.eden-orcamentos.priority=100"
+
+  eden-svc-manutencao:
+    <<: *common
+    build: ./svc-manutencao
+    image: luiseden/svc-manutencao:latest
+    healthcheck: *default-healthcheck
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-manutencao.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/manutencao`)"
+      - "traefik.http.routers.eden-manutencao.entrypoints=https"
+      - "traefik.http.routers.eden-manutencao.tls=true"
+      - "traefik.http.routers.eden-manutencao.service=eden-manutencao"
+      - "traefik.http.services.eden-manutencao.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-manutencao.middlewares=eden-cors"
+      - "traefik.http.routers.eden-manutencao.priority=100"
+
+  eden-svc-fornecedores:
+    <<: *common
+    build: ./svc-fornecedores
+    image: luiseden/svc-fornecedores:latest
+    healthcheck: *default-healthcheck
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-fornecedores.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/fornecedores`)"
+      - "traefik.http.routers.eden-fornecedores.entrypoints=https"
+      - "traefik.http.routers.eden-fornecedores.tls=true"
+      - "traefik.http.routers.eden-fornecedores.service=eden-fornecedores"
+      - "traefik.http.services.eden-fornecedores.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-fornecedores.middlewares=eden-cors"
+      - "traefik.http.routers.eden-fornecedores.priority=100"
+
+  eden-svc-usuarios:
+    <<: *common
+    build: ./svc-usuarios
+    image: luiseden/svc-usuarios:latest
+    healthcheck: *default-healthcheck
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-usuarios.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/usuarios`)"
+      - "traefik.http.routers.eden-usuarios.entrypoints=https"
+      - "traefik.http.routers.eden-usuarios.tls=true"
+      - "traefik.http.routers.eden-usuarios.service=eden-usuarios"
+      - "traefik.http.services.eden-usuarios.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-usuarios.middlewares=eden-cors"
+      - "traefik.http.routers.eden-usuarios.priority=100"

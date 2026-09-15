@@ -1,0 +1,196 @@
+version: '3.8'
+
+services:
+
+  hubluiseden:
+    build: .
+    container_name: hubluiseden
+    ports:
+      - "9000:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+  svc-auth:
+    build: ./svc-auth
+    container_name: eden-svc-auth
+    ports:
+      - "9001:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+  svc-catalogo:
+    build: ./svc-catalogo
+    container_name: eden-svc-catalogo
+    ports:
+      - "9002:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+  svc-vendas:
+    build: ./svc-vendas
+    container_name: eden-svc-vendas
+    ports:
+      - "9003:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+  svc-financeiro:
+    build: ./svc-financeiro
+    container_name: eden-svc-financeiro
+    ports:
+      - "9004:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+  svc-orcamentos:
+    build: ./svc-orcamentos
+    container_name: eden-svc-orcamentos
+    ports:
+      - "9005:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+  svc-manutencao:
+    build: ./svc-manutencao
+    container_name: eden-svc-manutencao
+    ports:
+      - "9006:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+  svc-fornecedores:
+    build: ./svc-fornecedores
+    container_name: eden-svc-fornecedores
+    ports:
+      - "9007:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+  svc-usuarios:
+    build: ./svc-usuarios
+    container_name: eden-svc-usuarios
+    ports:
+      - "9008:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - eden-net
+
+networks:
+  eden-net:
+    driver: bridge
