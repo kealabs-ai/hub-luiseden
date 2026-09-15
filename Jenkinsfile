@@ -31,7 +31,7 @@ pipeline {
                     cp -f $WORKSPACE/docker-compose.yml $DEPLOY_PATH/docker-compose.yml
                     cp -f $WORKSPACE/app/main.py $DEPLOY_PATH/app/main.py
 
-                    for SVC in svc-auth svc-catalogo svc-vendas svc-financeiro svc-orcamentos svc-manutencao svc-fornecedores; do
+                    for SVC in svc-auth svc-catalogo svc-vendas svc-financeiro svc-orcamentos svc-manutencao svc-fornecedores svc-usuarios; do
                         mkdir -p $DEPLOY_PATH/$SVC
                         cp -f $WORKSPACE/$SVC/main.py         $DEPLOY_PATH/$SVC/main.py
                         cp -f $WORKSPACE/$SVC/Dockerfile      $DEPLOY_PATH/$SVC/Dockerfile
@@ -103,7 +103,7 @@ pipeline {
                 sh '''
                     echo "▶ Aguardando containers ficarem healthy..."
 
-                    for CONTAINER in hubluiseden eden-svc-auth eden-svc-catalogo eden-svc-vendas eden-svc-financeiro eden-svc-orcamentos eden-svc-manutencao eden-svc-fornecedores; do
+                    for CONTAINER in hubluiseden eden-svc-auth eden-svc-catalogo eden-svc-vendas eden-svc-financeiro eden-svc-orcamentos eden-svc-manutencao eden-svc-fornecedores eden-svc-usuarios; do
                         echo "  Verificando $CONTAINER..."
                         for i in 1 2 3 4 5 6 7 8 9 10; do
                             HEALTH_STATUS=$($DOCKER inspect --format="{{.State.Health.Status}}" $CONTAINER 2>/dev/null || echo "none")
@@ -122,8 +122,9 @@ pipeline {
                     done
 
                     echo "▶ Verificando gateway na porta 9000..."
+                    HOST_IP=$(ip route | awk '/default/ {print $3; exit}')
                     for i in 1 2 3 4 5; do
-                        if curl -sf --max-time 5 http://localhost:9000/health >/dev/null 2>&1; then
+                        if $DOCKER exec hubluiseden python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)" >/dev/null 2>&1; then
                             echo "  ✔ Gateway respondendo em :9000"
                             break
                         fi
