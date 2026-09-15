@@ -9,10 +9,19 @@ import bcrypt
 from jose import jwt, JWTError
 from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Enum as SAEnum
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from urllib.parse import quote_plus
 from dotenv import load_dotenv
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://luiseden:senha@localhost:3306/luiseden")
+def _build_database_url() -> str:
+    host     = os.getenv("luis_ed_DB_HOST",     "localhost")
+    port     = os.getenv("luis_ed_DB_PORT",     "3306")
+    name     = os.getenv("luis_ed_DB_NAME",     "luiseden")
+    user     = os.getenv("luis_ed_DB_USER",     "luiseden")
+    password = quote_plus(os.getenv("luis_ed_DB_PASSWORD", "senha"))
+    return f"mysql+pymysql://{user}:{password}@{host}:{port}/{name}"
+
+DATABASE_URL = _build_database_url()
 SECRET_KEY   = os.getenv("SECRET_KEY", "changeme-secret-key")
 ALGORITHM    = "HS256"
 
