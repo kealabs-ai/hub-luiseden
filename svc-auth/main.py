@@ -1,5 +1,6 @@
 import os, uuid, enum
 from datetime import datetime, timedelta
+from urllib.parse import quote_plus
 from fastapi import FastAPI, HTTPException, Depends
 from dotenv import load_dotenv
 load_dotenv()
@@ -12,14 +13,11 @@ from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Enum as
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 def _build_database_url() -> str:
-    url = os.getenv("DATABASE_URL")
-    if url and url.strip().lower() not in ("", "null", "none"):
-        return url.strip()
     host     = os.getenv("luis_ed_DB_HOST",     "localhost")
     port     = os.getenv("luis_ed_DB_PORT",     "3306")
     name     = os.getenv("luis_ed_DB_NAME",     "luiseden")
     user     = os.getenv("luis_ed_DB_USER",     "luiseden")
-    password = os.getenv("luis_ed_DB_PASSWORD", "senha")
+    password = quote_plus(os.getenv("luis_ed_DB_PASSWORD", "senha"))
     return f"mysql+pymysql://{user}:{password}@{host}:{port}/{name}"
 
 DATABASE_URL = _build_database_url()
