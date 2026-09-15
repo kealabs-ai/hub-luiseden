@@ -6,7 +6,7 @@ services:
     build: .
     container_name: hubluiseden
     ports:
-      - "8000:8000"
+      - "9000:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}
@@ -27,7 +27,7 @@ services:
     build: ./svc-auth
     container_name: eden-svc-auth
     ports:
-      - "8001:8000"
+      - "9001:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}
@@ -48,7 +48,7 @@ services:
     build: ./svc-catalogo
     container_name: eden-svc-catalogo
     ports:
-      - "8002:8000"
+      - "9002:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}
@@ -69,7 +69,7 @@ services:
     build: ./svc-vendas
     container_name: eden-svc-vendas
     ports:
-      - "8003:8000"
+      - "9003:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}
@@ -90,7 +90,7 @@ services:
     build: ./svc-financeiro
     container_name: eden-svc-financeiro
     ports:
-      - "8004:8000"
+      - "9004:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}
@@ -111,7 +111,7 @@ services:
     build: ./svc-orcamentos
     container_name: eden-svc-orcamentos
     ports:
-      - "8005:8000"
+      - "9005:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}
@@ -132,7 +132,7 @@ services:
     build: ./svc-manutencao
     container_name: eden-svc-manutencao
     ports:
-      - "8006:8000"
+      - "9006:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}
@@ -153,7 +153,7 @@ services:
     build: ./svc-fornecedores
     container_name: eden-svc-fornecedores
     ports:
-      - "8007:8000"
+      - "9007:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}
@@ -174,7 +174,7 @@ services:
     build: ./svc-usuarios
     container_name: eden-svc-usuarios
     ports:
-      - "8008:8000"
+      - "9008:8000"
     environment:
       - luis_ed_DB_HOST=${luis_ed_DB_HOST}
       - luis_ed_DB_PORT=${luis_ed_DB_PORT}

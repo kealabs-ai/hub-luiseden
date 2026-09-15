@@ -77,6 +77,15 @@ pipeline {
                     $DOCKER network inspect easypanel >/dev/null 2>&1 || \
                         $DOCKER network create easypanel
 
+                    echo "▶ Liberando portas 9000-9008 se ocupadas..."
+                    for PORT in 9000 9001 9002 9003 9004 9005 9006 9007 9008; do
+                        CID=$(${DOCKER} ps -q --filter "publish=${PORT}" 2>/dev/null || true)
+                        if [ -n "$CID" ]; then
+                            echo "  Parando container na porta ${PORT}..."
+                            $DOCKER stop $CID 2>/dev/null || true
+                        fi
+                    done
+
                     echo "▶ Derrubando stack anterior..."
                     $DOCKER compose -f docker-compose.yml -p $PROJETO down --remove-orphans 2>/dev/null || true
 
@@ -110,6 +119,20 @@ pipeline {
                             fi
                             sleep 3
                         done
+                    done
+
+                    echo "▶ Verificando gateway na porta 9000..."
+                    for i in 1 2 3 4 5; do
+                        if curl -sf --max-time 5 http://localhost:9000/health >/dev/null 2>&1; then
+                            echo "  ✔ Gateway respondendo em :9000"
+                            break
+                        fi
+                        if [ $i -eq 5 ]; then
+                            echo "  ✘ Gateway não respondeu em :9000"
+                            $DOCKER logs hubluiseden | tail -20
+                            exit 1
+                        fi
+                        sleep 5
                     done
 
                     echo "✅ Todos os containers healthy"
