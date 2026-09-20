@@ -42,7 +42,7 @@ services:
       - "traefik.http.services.eden-auth.loadbalancer.server.port=8000"
       - "traefik.http.routers.eden-auth.middlewares=eden-cors"
       - "traefik.http.routers.eden-auth.priority=100"
-      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://luiseden.com.br,https://www.luiseden.com.br"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
       - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
       - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
       - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
@@ -55,7 +55,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=easypanel"
-      - "traefik.http.routers.eden-catalogo.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/catalogo`)"
+      - "traefik.http.routers.eden-catalogo.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/catalogo`)"
       - "traefik.http.routers.eden-catalogo.entrypoints=https"
       - "traefik.http.routers.eden-catalogo.tls=true"
       - "traefik.http.routers.eden-catalogo.service=eden-catalogo"
@@ -71,7 +71,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=easypanel"
-      - "traefik.http.routers.eden-vendas.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/vendas`)"
+      - "traefik.http.routers.eden-vendas.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/vendas`)"
       - "traefik.http.routers.eden-vendas.entrypoints=https"
       - "traefik.http.routers.eden-vendas.tls=true"
       - "traefik.http.routers.eden-vendas.service=eden-vendas"
@@ -87,7 +87,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=easypanel"
-      - "traefik.http.routers.eden-financeiro.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/financeiro`)"
+      - "traefik.http.routers.eden-financeiro.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/financeiro`)"
       - "traefik.http.routers.eden-financeiro.entrypoints=https"
       - "traefik.http.routers.eden-financeiro.tls=true"
       - "traefik.http.routers.eden-financeiro.service=eden-financeiro"
@@ -103,7 +103,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=easypanel"
-      - "traefik.http.routers.eden-orcamentos.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/orcamentos`)"
+      - "traefik.http.routers.eden-orcamentos.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/orcamentos`)"
       - "traefik.http.routers.eden-orcamentos.entrypoints=https"
       - "traefik.http.routers.eden-orcamentos.tls=true"
       - "traefik.http.routers.eden-orcamentos.service=eden-orcamentos"
@@ -119,7 +119,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=easypanel"
-      - "traefik.http.routers.eden-manutencao.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/manutencao`)"
+      - "traefik.http.routers.eden-manutencao.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/manutencao`)"
       - "traefik.http.routers.eden-manutencao.entrypoints=https"
       - "traefik.http.routers.eden-manutencao.tls=true"
       - "traefik.http.routers.eden-manutencao.service=eden-manutencao"
@@ -135,7 +135,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=easypanel"
-      - "traefik.http.routers.eden-fornecedores.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/fornecedores`)"
+      - "traefik.http.routers.eden-fornecedores.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/fornecedores`)"
       - "traefik.http.routers.eden-fornecedores.entrypoints=https"
       - "traefik.http.routers.eden-fornecedores.tls=true"
       - "traefik.http.routers.eden-fornecedores.service=eden-fornecedores"
@@ -151,7 +151,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=easypanel"
-      - "traefik.http.routers.eden-usuarios.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/usuarios`)"
+      - "traefik.http.routers.eden-usuarios.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/usuarios`)"
       - "traefik.http.routers.eden-usuarios.entrypoints=https"
       - "traefik.http.routers.eden-usuarios.tls=true"
       - "traefik.http.routers.eden-usuarios.service=eden-usuarios"
