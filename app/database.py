@@ -30,6 +30,8 @@ class DatabaseConfig:
         missing = [key for key, value in values.items() if not value]
         if missing:
             raise RuntimeError(f"Variáveis de ambiente do banco ausentes: {', '.join(missing)}")
+        if not values["luis_ed_DB_PORT"].isdigit() or not 1 <= int(values["luis_ed_DB_PORT"]) <= 65535:
+            raise RuntimeError("luis_ed_DB_PORT deve ser um número entre 1 e 65535")
 
         return cls(
             host=values["luis_ed_DB_HOST"],
@@ -56,6 +58,8 @@ class DatabaseManager:
             pool_recycle=280,
             pool_size=5,
             max_overflow=10,
+            pool_timeout=15,
+            connect_args={"connect_timeout": 10},
         )
         self.SessionLocal = sessionmaker(
             bind=self.engine,

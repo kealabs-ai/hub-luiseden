@@ -118,7 +118,12 @@ pipeline {
         }
 
         stage('Deploy') {
-            when { branch 'main' }
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                }
+            }
             steps {
                     withCredentials([
                         string(credentialsId: 'luiseden-secret-key', variable: 'SECRET_KEY'),
@@ -132,6 +137,14 @@ pipeline {
                         echo "=== DEPLOY HOSTINGER ==="
 
                         sh '''
+                            set -eu
+                            for variable in SECRET_KEY luis_ed_DB_HOST luis_ed_DB_PORT luis_ed_DB_NAME luis_ed_DB_USER luis_ed_DB_PASSWORD; do
+                                if [ -z "$(printenv "$variable" || true)" ]; then
+                                    echo "Missing required deployment variable: $variable"
+                                    exit 1
+                                fi
+                            done
+
                             cat > .env << EOF
 SECRET_KEY=${SECRET_KEY}
 luis_ed_DB_HOST=${luis_ed_DB_HOST}
@@ -169,7 +182,12 @@ EOF
         }
 
         stage('Health Check') {
-            when { branch 'main' }
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                }
+            }
             steps {
                 script {
                     echo "=== VERIFICAÇÃO DE SAÚDE ==="
