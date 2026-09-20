@@ -35,7 +35,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=easypanel"
-      - "traefik.http.routers.eden-auth.rule=Host(`luiseden.com.br`) && PathPrefix(`/v1/eden/auth`)"
+      - "traefik.http.routers.eden-auth.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/auth`)"
       - "traefik.http.routers.eden-auth.entrypoints=https"
       - "traefik.http.routers.eden-auth.tls=true"
       - "traefik.http.routers.eden-auth.service=eden-auth"
