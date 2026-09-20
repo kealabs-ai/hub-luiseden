@@ -16,6 +16,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.hubluiseden.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/`)"
       - "traefik.http.routers.hubluiseden.entrypoints=https"
       - "traefik.http.routers.hubluiseden.tls=true"
@@ -33,6 +34,7 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
   svc-auth:
@@ -49,6 +51,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.eden-auth.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/auth`)"
       - "traefik.http.routers.eden-auth.entrypoints=https"
       - "traefik.http.routers.eden-auth.tls=true"
@@ -67,6 +70,7 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
   svc-catalogo:
@@ -83,6 +87,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.eden-catalogo.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/catalogo`)"
       - "traefik.http.routers.eden-catalogo.entrypoints=https"
       - "traefik.http.routers.eden-catalogo.tls=true"
@@ -101,6 +106,7 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
   svc-vendas:
@@ -117,6 +123,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.eden-vendas.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/vendas`)"
       - "traefik.http.routers.eden-vendas.entrypoints=https"
       - "traefik.http.routers.eden-vendas.tls=true"
@@ -135,6 +142,7 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
   svc-financeiro:
@@ -151,6 +159,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.eden-financeiro.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/financeiro`)"
       - "traefik.http.routers.eden-financeiro.entrypoints=https"
       - "traefik.http.routers.eden-financeiro.tls=true"
@@ -169,6 +178,7 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
   svc-orcamentos:
@@ -185,6 +195,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.eden-orcamentos.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/orcamentos`)"
       - "traefik.http.routers.eden-orcamentos.entrypoints=https"
       - "traefik.http.routers.eden-orcamentos.tls=true"
@@ -203,6 +214,7 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
   svc-manutencao:
@@ -219,6 +231,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.eden-manutencao.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/manutencao`)"
       - "traefik.http.routers.eden-manutencao.entrypoints=https"
       - "traefik.http.routers.eden-manutencao.tls=true"
@@ -237,6 +250,7 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
   svc-fornecedores:
@@ -253,6 +267,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.eden-fornecedores.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/fornecedores`)"
       - "traefik.http.routers.eden-fornecedores.entrypoints=https"
       - "traefik.http.routers.eden-fornecedores.tls=true"
@@ -271,6 +286,7 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
   svc-usuarios:
@@ -287,6 +303,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
       - "traefik.http.routers.eden-usuarios.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/usuarios`)"
       - "traefik.http.routers.eden-usuarios.entrypoints=https"
       - "traefik.http.routers.eden-usuarios.tls=true"
@@ -305,8 +322,11 @@ services:
       retries: 3
       start_period: 15s
     networks:
+      - easypanel
       - eden-net
 
 networks:
+  easypanel:
+    external: true
   eden-net:
     driver: bridge
