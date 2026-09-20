@@ -15,8 +15,16 @@ cp .env.example .env
 ```
 
 Campos obrigatórios:
-- `SECRET_KEY` — chave JWT (mínimo 32 chars)
-- `DATABASE_URL` — connection string MySQL
+- `SECRET_KEY` — chave JWT (mínimo 32 caracteres)
+- `luis_ed_DB_HOST` — host do MySQL
+- `luis_ed_DB_PORT` — porta do MySQL
+- `luis_ed_DB_NAME` — nome do banco
+- `luis_ed_DB_USER` — usuário do banco
+- `luis_ed_DB_PASSWORD` — senha do banco
+
+Em produção, configure esses valores como credenciais secretas no Jenkins. O pipeline
+gera `.env` apenas no servidor durante o deploy e remove o arquivo ao final. Não
+adicione credenciais ao GitHub.
 
 ## Deploy local (desenvolvimento)
 

@@ -5,7 +5,6 @@ pipeline {
         REGISTRY             = "registry.luiseden.io"
         IMAGE_PREFIX         = "${REGISTRY}/luiseden"
         TAG                  = "${env.BUILD_NUMBER}"
-        DATABASE_URL         = credentials('luiseden-database-url')
         COMPOSE_PROJECT_NAME = "luiseden"
     }
 
@@ -25,7 +24,7 @@ pipeline {
                             mkdir -p \$HOME/bin
                             curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64" -o \$HOME/bin/docker-compose
                             chmod +x \$HOME/bin/docker-compose
-                            export PATH=\$HOME/bin:\$PATH
+                            export PATH=$HOME/bin:$PATH
                         fi
 
                         export PATH=\$HOME/bin:\$PATH
@@ -105,7 +104,11 @@ pipeline {
 
                     sh """
                         docker run --rm \
-                          -e DATABASE_URL=sqlite:///./test.db \
+                          -e luis_ed_DB_HOST=localhost \
+                          -e luis_ed_DB_PORT=3306 \
+                          -e luis_ed_DB_NAME=test \
+                          -e luis_ed_DB_USER=test \
+                          -e luis_ed_DB_PASSWORD=test \
                           -e SECRET_KEY=test-key \
                           ${IMAGE_PREFIX}/svc-auth:${TAG} \
                           python -c "import main; print('svc-auth: OK')"
@@ -117,34 +120,49 @@ pipeline {
         stage('Deploy') {
             when { branch 'main' }
             steps {
-                withCredentials([string(credentialsId: 'luiseden-secret-key', variable: 'SECRET_KEY')]) {
+                    withCredentials([
+                        string(credentialsId: 'luiseden-secret-key', variable: 'SECRET_KEY'),
+                        string(credentialsId: 'luiseden-db-host', variable: 'luis_ed_DB_HOST'),
+                        string(credentialsId: 'luiseden-db-port', variable: 'luis_ed_DB_PORT'),
+                        string(credentialsId: 'luiseden-db-name', variable: 'luis_ed_DB_NAME'),
+                        string(credentialsId: 'luiseden-db-user', variable: 'luis_ed_DB_USER'),
+                        string(credentialsId: 'luiseden-db-password', variable: 'luis_ed_DB_PASSWORD')
+                    ]) {
                     script {
                         echo "=== DEPLOY HOSTINGER ==="
 
-                        sh """
+                        sh '''
                             cat > .env << EOF
 SECRET_KEY=${SECRET_KEY}
-DATABASE_URL=${DATABASE_URL}
+luis_ed_DB_HOST=${luis_ed_DB_HOST}
+luis_ed_DB_PORT=${luis_ed_DB_PORT}
+luis_ed_DB_NAME=${luis_ed_DB_NAME}
+luis_ed_DB_USER=${luis_ed_DB_USER}
+luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
 REGISTRY=${REGISTRY}
 TAG=${TAG}
 COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
 EOF
-                        """
+                        '''
 
-                        sh """
-                            export PATH=\$HOME/bin:\$PATH
-                            export SECRET_KEY=${SECRET_KEY}
-                            export DATABASE_URL=${DATABASE_URL}
-                            export REGISTRY=${REGISTRY}
-                            export TAG=${TAG}
-                            export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
+                        sh '''
+                            export PATH=$HOME/bin:$PATH
+                            export SECRET_KEY="$SECRET_KEY"
+                            export luis_ed_DB_HOST="$luis_ed_DB_HOST"
+                            export luis_ed_DB_PORT="$luis_ed_DB_PORT"
+                            export luis_ed_DB_NAME="$luis_ed_DB_NAME"
+                            export luis_ed_DB_USER="$luis_ed_DB_USER"
+                            export luis_ed_DB_PASSWORD="$luis_ed_DB_PASSWORD"
+                            export REGISTRY="$REGISTRY"
+                            export TAG="$TAG"
+                            export COMPOSE_PROJECT_NAME="$COMPOSE_PROJECT_NAME"
 
                             echo "Fazendo deploy..."
                             docker-compose -p ${COMPOSE_PROJECT_NAME} up -d --build --remove-orphans
 
                             echo "Aguardando inicialização..."
                             sleep 45
-                        """
+                        '''
                     }
                 }
             }
