@@ -30,6 +30,7 @@ class Planta(Base):
     categoria   = Column(String(100), nullable=True)
     descricao   = Column(Text, nullable=True)
     preco_cents = Column(Integer, nullable=False, default=0)
+    custo_cents = Column(Integer, nullable=False, default=0)
     estoque     = Column(Integer, nullable=False, default=0)
     imagem_url  = Column(String(500), nullable=True)
     ativo       = Column(Boolean, default=True)
@@ -117,21 +118,28 @@ class VendaUpdate(BaseModel):
 class VendaGetIn(BaseModel):
     id: str
 
-def _to_dict(v: Venda):
+def _to_dict(v: Venda, db: Session):
+    items = db.query(ItemVenda).filter_by(venda_id=v.id).all()
+    item_data = []
+    for item in items:
+        planta = db.query(Planta).filter_by(id=item.planta_id).first()
+        item_data.append({"plantaId": item.planta_id, "quantidade": item.quantidade,
+                          "precoCents": item.preco_cents,
+                          "custoCents": planta.custo_cents if planta else 0})
     return {"id": v.id, "usuarioId": v.usuario_id, "clienteNome": v.cliente_nome,
             "dataVenda": v.data_venda.isoformat(),
             "totalCents": v.total_cents, "status": v.status, "observacoes": v.observacoes,
-            "createdAt": v.created_at.isoformat(), "updatedAt": v.updated_at.isoformat()}
+            "createdAt": v.created_at.isoformat(), "updatedAt": v.updated_at.isoformat(), "itens": item_data}
 
 @app.get("/v1/eden/vendas")
 def list_vendas(db: Session = Depends(get_db), payload=Depends(verify_token)):
-    return [_to_dict(v) for v in db.query(Venda).order_by(Venda.created_at.desc()).all()]
+    return [_to_dict(v, db) for v in db.query(Venda).order_by(Venda.created_at.desc()).all()]
 
 @app.post("/v1/eden/vendas/get")
 def get_venda(body: VendaGetIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
     v = db.query(Venda).filter_by(id=body.id).first()
     if not v: raise HTTPException(404, "Não encontrado")
-    return _to_dict(v)
+    return _to_dict(v, db)
 
 @app.post("/v1/eden/vendas", status_code=201)
 def create_venda(body: VendaIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
@@ -160,7 +168,7 @@ def create_venda(body: VendaIn, db: Session = Depends(get_db), payload=Depends(v
         db.add(ItemVenda(venda_id=v.id, planta_id=item.plantaId,
                          quantidade=item.quantidade, preco_cents=item.precoCents))
     db.commit(); db.refresh(v)
-    return _to_dict(v)
+    return _to_dict(v, db)
 
 @app.post("/v1/eden/vendas/cancel")
 def cancel_venda(body: VendaCancelIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
@@ -185,7 +193,7 @@ def cancel_venda(body: VendaCancelIn, db: Session = Depends(get_db), payload=Dep
                      data=(venda.data_venda or datetime.utcnow()).date().isoformat()))
     venda.updated_at = datetime.utcnow()
     db.commit(); db.refresh(venda)
-    return _to_dict(venda)
+    return _to_dict(venda, db)
 
 @app.post("/v1/eden/vendas/update")
 def update_venda(body: VendaUpdate, db: Session = Depends(get_db), payload=Depends(verify_token)):

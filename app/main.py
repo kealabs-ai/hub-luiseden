@@ -58,6 +58,7 @@ class Planta(Base):
     categoria   = Column(String(100), nullable=True)
     descricao   = Column(Text,        nullable=True)
     preco_cents = Column(Integer,     nullable=False, default=0)
+    custo_cents = Column(Integer,     nullable=False, default=0)
     estoque     = Column(Integer,     nullable=False, default=0)
     imagem_url  = Column(String(500), nullable=True)
     ativo       = Column(Boolean,     default=True)
@@ -229,12 +230,13 @@ class PlantaIn(BaseModel):
     categoria: Optional[str] = None
     descricao: Optional[str] = None
     precoCents: int = 0
+    custoCents: int = 0
     estoque: int = 0
     imagemUrl: Optional[str] = None
 
 def _planta_dict(p: Planta):
     return {"id": p.id, "nome": p.nome, "categoria": p.categoria, "descricao": p.descricao,
-            "precoCents": p.preco_cents, "estoque": p.estoque, "imagemUrl": p.imagem_url,
+            "precoCents": p.preco_cents, "custoCents": p.custo_cents, "estoque": p.estoque, "imagemUrl": p.imagem_url,
             "ativo": p.ativo, "createdAt": p.created_at.isoformat()}
 
 @app.get("/v1/eden/catalogo")
@@ -244,7 +246,8 @@ def list_plantas(db: Session = Depends(get_db), payload=Depends(verify_token)):
 @app.post("/v1/eden/catalogo", status_code=201)
 def create_planta(body: PlantaIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
     p = Planta(nome=body.nome, categoria=body.categoria, descricao=body.descricao,
-               preco_cents=body.precoCents, estoque=body.estoque, imagem_url=body.imagemUrl)
+               preco_cents=body.precoCents, custo_cents=body.custoCents,
+               estoque=body.estoque, imagem_url=body.imagemUrl)
     db.add(p); db.commit(); db.refresh(p)
     return _planta_dict(p)
 
@@ -277,15 +280,22 @@ class VendaIn(BaseModel):
     observacoes: Optional[str] = None
     itens: list[ItemVendaIn] = []
 
-def _venda_dict(v: Venda):
+def _venda_dict(v: Venda, db: Session):
+    items = db.query(ItemVenda).filter_by(venda_id=v.id).all()
+    item_data = []
+    for item in items:
+        planta = db.query(Planta).filter_by(id=item.planta_id).first()
+        item_data.append({"plantaId": item.planta_id, "quantidade": item.quantidade,
+                          "precoCents": item.preco_cents,
+                          "custoCents": planta.custo_cents if planta else 0})
     return {"id": v.id, "usuarioId": v.usuario_id, "clienteNome": v.cliente_nome,
             "dataVenda": v.data_venda.isoformat(),
             "totalCents": v.total_cents, "status": v.status,
-            "createdAt": v.created_at.isoformat()}
+            "createdAt": v.created_at.isoformat(), "itens": item_data}
 
 @app.get("/v1/eden/vendas")
 def list_vendas(db: Session = Depends(get_db), payload=Depends(verify_token)):
-    return [_venda_dict(v) for v in db.query(Venda).order_by(Venda.created_at.desc()).all()]
+    return [_venda_dict(v, db) for v in db.query(Venda).order_by(Venda.created_at.desc()).all()]
 
 @app.post("/v1/eden/vendas", status_code=201)
 def create_venda(body: VendaIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
@@ -314,7 +324,7 @@ def create_venda(body: VendaIn, db: Session = Depends(get_db), payload=Depends(v
         db.add(ItemVenda(venda_id=v.id, planta_id=item.plantaId,
                          quantidade=item.quantidade, preco_cents=item.precoCents))
     db.commit(); db.refresh(v)
-    return _venda_dict(v)
+    return _venda_dict(v, db)
 
 @app.post("/v1/eden/vendas/cancel")
 def cancel_venda(body: VendaCancelIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
@@ -339,7 +349,7 @@ def cancel_venda(body: VendaCancelIn, db: Session = Depends(get_db), payload=Dep
                      data=(venda.data_venda or datetime.utcnow()).date().isoformat()))
     venda.updated_at = datetime.utcnow()
     db.commit(); db.refresh(venda)
-    return _venda_dict(venda)
+    return _venda_dict(venda, db)
 
 @app.get("/v1/eden/vendas/dashboard")
 def vendas_dashboard(db: Session = Depends(get_db), payload=Depends(verify_token)):

@@ -30,6 +30,7 @@ class Planta(Base):
     categoria   = Column(String(100), nullable=True)
     descricao   = Column(Text,        nullable=True)
     preco_cents = Column(Integer,     nullable=False, default=0)
+    custo_cents = Column(Integer,     nullable=False, default=0)
     estoque     = Column(Integer,     nullable=False, default=0)
     imagem_url  = Column(String(500), nullable=True)
     ativo       = Column(Boolean,     default=True)
@@ -62,6 +63,7 @@ class PlantaIn(BaseModel):
     categoria: Optional[str] = None
     descricao: Optional[str] = None
     precoCents: int = 0
+    custoCents: int = 0
     estoque: int = 0
     imagemUrl: Optional[str] = None
 
@@ -71,6 +73,7 @@ class PlantaUpdate(BaseModel):
     categoria: Optional[str] = None
     descricao: Optional[str] = None
     precoCents: Optional[int] = None
+    custoCents: Optional[int] = None
     estoque: Optional[int] = None
     imagemUrl: Optional[str] = None
     ativo: Optional[bool] = None
@@ -80,7 +83,7 @@ class PlantaDeleteIn(BaseModel):
 
 def _to_dict(p: Planta):
     return {"id": p.id, "nome": p.nome, "categoria": p.categoria, "descricao": p.descricao,
-            "precoCents": p.preco_cents, "estoque": p.estoque, "imagemUrl": p.imagem_url,
+            "precoCents": p.preco_cents, "custoCents": p.custo_cents, "estoque": p.estoque, "imagemUrl": p.imagem_url,
             "ativo": p.ativo, "createdAt": p.created_at.isoformat(), "updatedAt": p.updated_at.isoformat()}
 
 @app.get("/v1/eden/catalogo")
@@ -100,7 +103,8 @@ def get_planta(body: PlantaDeleteIn, db: Session = Depends(get_db), payload=Depe
 @app.post("/v1/eden/catalogo", status_code=201)
 def create_planta(body: PlantaIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
     p = Planta(nome=body.nome, categoria=body.categoria, descricao=body.descricao,
-               preco_cents=body.precoCents, estoque=body.estoque, imagem_url=body.imagemUrl)
+               preco_cents=body.precoCents, custo_cents=body.custoCents,
+               estoque=body.estoque, imagem_url=body.imagemUrl)
     db.add(p); db.commit(); db.refresh(p)
     return _to_dict(p)
 
@@ -110,6 +114,7 @@ def update_planta(body: PlantaUpdate, db: Session = Depends(get_db), payload=Dep
     if not p: raise HTTPException(404, "Não encontrado")
     data = body.model_dump(exclude_none=True, exclude={"id"})
     if "precoCents" in data: p.preco_cents = data.pop("precoCents")
+    if "custoCents" in data: p.custo_cents = data.pop("custoCents")
     if "imagemUrl"  in data: p.imagem_url  = data.pop("imagemUrl")
     for k, v in data.items(): setattr(p, k, v)
     p.updated_at = datetime.utcnow()

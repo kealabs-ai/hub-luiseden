@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS plantas (
     categoria   VARCHAR(100),
     descricao   TEXT,
     preco_cents INT          NOT NULL DEFAULT 0,
+    custo_cents INT          NOT NULL DEFAULT 0,
     estoque     INT          NOT NULL DEFAULT 0,
     imagem_url  VARCHAR(500),
     ativo       BOOLEAN DEFAULT TRUE,
