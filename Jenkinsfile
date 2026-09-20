@@ -65,9 +65,36 @@ pipeline {
         // ── 3. BUILD E DEPLOY ─────────────────────────────────────────────
         stage('Deploy') {
             steps {
+                withCredentials([
+                    string(credentialsId: 'luiseden-secret-key', variable: 'SECRET_KEY'),
+                    string(credentialsId: 'luiseden-db-host', variable: 'luis_ed_DB_HOST'),
+                    string(credentialsId: 'luiseden-db-port', variable: 'luis_ed_DB_PORT'),
+                    string(credentialsId: 'luiseden-db-name', variable: 'luis_ed_DB_NAME'),
+                    string(credentialsId: 'luiseden-db-user', variable: 'luis_ed_DB_USER'),
+                    string(credentialsId: 'luiseden-db-password', variable: 'luis_ed_DB_PASSWORD')
+                ]) {
                 sh '''
                     set -e
                     cd $DEPLOY_PATH
+
+                    for VARIABLE in SECRET_KEY luis_ed_DB_HOST luis_ed_DB_PORT luis_ed_DB_NAME luis_ed_DB_USER luis_ed_DB_PASSWORD; do
+                        if [ -z "$(printenv "$VARIABLE" || true)" ]; then
+                            echo "Variável obrigatória ausente: $VARIABLE"
+                            exit 1
+                        fi
+                    done
+
+                    umask 077
+                    cat > .env << EOF
+SECRET_KEY=${SECRET_KEY}
+luis_ed_DB_HOST=${luis_ed_DB_HOST}
+luis_ed_DB_PORT=${luis_ed_DB_PORT}
+luis_ed_DB_NAME=${luis_ed_DB_NAME}
+luis_ed_DB_USER=${luis_ed_DB_USER}
+luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+EOF
+
+                    trap 'rm -f .env' EXIT
 
                     echo "▶ Garantindo rede eden-net..."
                     $DOCKER network inspect eden-net >/dev/null 2>&1 || \
@@ -94,6 +121,7 @@ pipeline {
 
                     echo "✅ Deploy concluído"
                 '''
+                }
             }
         }
 
