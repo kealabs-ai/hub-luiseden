@@ -1,6 +1,5 @@
 import os, uuid, enum
 from datetime import datetime, timedelta
-from urllib.parse import quote_plus
 from fastapi import FastAPI, HTTPException, Depends
 from dotenv import load_dotenv
 load_dotenv()
@@ -9,37 +8,18 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 import bcrypt
 from jose import jwt, JWTError
-from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Enum as SAEnum
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy import Column, String, Boolean, DateTime, Enum as SAEnum
+from sqlalchemy.orm import DeclarativeBase, Session
 
-def _build_database_url() -> str:
-    host = os.getenv("luis_ed_DB_HOST")
-    port = os.getenv("luis_ed_DB_PORT")
-    name = os.getenv("luis_ed_DB_NAME")
-    user = os.getenv("luis_ed_DB_USER")
-    password = os.getenv("luis_ed_DB_PASSWORD")
+from database import DatabaseManager
 
-    missing = [
-        key for key, value in {
-            "luis_ed_DB_HOST": host,
-            "luis_ed_DB_PORT": port,
-            "luis_ed_DB_NAME": name,
-            "luis_ed_DB_USER": user,
-            "luis_ed_DB_PASSWORD": password,
-        }.items() if not value
-    ]
-    if missing:
-        raise RuntimeError(f"Variáveis de ambiente do banco ausentes: {', '.join(missing)}")
-
-    return f"mysql+pymysql://{user}:{quote_plus(password)}@{host}:{port}/{name}"
-
-DATABASE_URL = _build_database_url()
+db_manager = DatabaseManager.from_env()
+SessionLocal = db_manager.SessionLocal
+DATABASE_URL = db_manager.config.url
 SECRET_KEY   = os.getenv("SECRET_KEY", "changeme-secret-key")
 ALGORITHM    = "HS256"
 TOKEN_EXPIRE_MINUTES = 60 * 8
 
-engine       = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=280, pool_size=5, max_overflow=10)
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 bearer       = HTTPBearer()
 
 def _hash(p: str) -> str:
@@ -70,17 +50,11 @@ class Usuario(Base):
     updated_at = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
 
 def get_db():
-    db = SessionLocal()
-    try:
+    for db in db_manager.get_db():
         yield db
-    except Exception:
-        db.rollback()
-        raise
-    finally:
-        db.close()
 
 def _init_db():
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(db_manager.engine)
     with SessionLocal() as db:
         if not db.query(Usuario).filter_by(email="admin@luiseden.com.br").first():
             db.add(Usuario(nome="Admin", email="admin@luiseden.com.br",
