@@ -1,0 +1,3 @@
+ALTER TABLE vendas
+    ADD COLUMN data_venda DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    AFTER cliente_nome;
