@@ -32,7 +32,7 @@ pipeline {
                     cp -f $WORKSPACE/app/main.py $DEPLOY_PATH/app/main.py
 
                     mkdir -p $DEPLOY_PATH/knowledge
-                    find $WORKSPACE/knowledge -maxdepth 1 -type f -name '*.md' -exec cp -f {} $DEPLOY_PATH/knowledge/ \;
+                    cp -f $WORKSPACE/knowledge/*.md $DEPLOY_PATH/knowledge/
 
                     for SVC in svc-auth svc-catalogo svc-vendas svc-financeiro svc-orcamentos svc-manutencao svc-fornecedores svc-usuarios; do
                         mkdir -p $DEPLOY_PATH/$SVC
