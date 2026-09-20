@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from jose import jwt, JWTError
-from sqlalchemy import create_engine, Column, String, DateTime, Text, Integer
+from sqlalchemy import create_engine, Column, String, DateTime, Text, Integer, Boolean
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from dotenv import load_dotenv
 load_dotenv()
@@ -22,6 +22,19 @@ ALGORITHM    = "HS256"
 bearer       = HTTPBearer()
 
 class Base(DeclarativeBase): pass
+
+class Planta(Base):
+    __tablename__ = "plantas"
+    id          = Column(String(36), primary_key=True)
+    nome        = Column(String(255), nullable=False)
+    categoria   = Column(String(100), nullable=True)
+    descricao   = Column(Text, nullable=True)
+    preco_cents = Column(Integer, nullable=False, default=0)
+    estoque     = Column(Integer, nullable=False, default=0)
+    imagem_url  = Column(String(500), nullable=True)
+    ativo       = Column(Boolean, default=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    updated_at  = Column(DateTime, default=datetime.utcnow)
 
 class Venda(Base):
     __tablename__ = "vendas"
@@ -42,6 +55,11 @@ class ItemVenda(Base):
     planta_id   = Column(String(36), nullable=False)
     quantidade  = Column(Integer,    nullable=False, default=1)
     preco_cents = Column(Integer,    nullable=False, default=0)
+
+class ItemVendaIn(BaseModel):
+    plantaId: str
+    quantidade: int
+    precoCents: int
 
 def get_db():
     for db in db_manager.get_db():
@@ -70,6 +88,7 @@ class VendaIn(BaseModel):
     totalCents: int
     status: str = "concluida"
     observacoes: Optional[str] = None
+    itens: list[ItemVendaIn] = []
 
 class VendaUpdate(BaseModel):
     id: str
@@ -100,10 +119,31 @@ def get_venda(body: VendaGetIn, db: Session = Depends(get_db), payload=Depends(v
 
 @app.post("/v1/eden/vendas", status_code=201)
 def create_venda(body: VendaIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
+    quantities = {}
+    for item in body.itens:
+        if item.quantidade < 1:
+            raise HTTPException(400, "A quantidade deve ser maior que zero")
+        quantities[item.plantaId] = quantities.get(item.plantaId, 0) + item.quantidade
+
+    plants = {}
+    for planta_id, quantity in quantities.items():
+        planta = db.query(Planta).filter_by(id=planta_id, ativo=True).with_for_update().first()
+        if not planta:
+            raise HTTPException(404, f"Planta não encontrada: {planta_id}")
+        if planta.estoque < quantity:
+            raise HTTPException(409, f"Estoque insuficiente para {planta.nome}. Disponível: {planta.estoque}")
+        plants[planta_id] = planta
+
     v = Venda(usuario_id=payload["sub"], cliente_nome=body.clienteNome,
               data_venda=body.dataVenda or datetime.utcnow(), total_cents=body.totalCents,
               status=body.status, observacoes=body.observacoes)
-    db.add(v); db.commit(); db.refresh(v)
+    db.add(v)
+    db.flush()
+    for item in body.itens:
+        plants[item.plantaId].estoque -= item.quantidade
+        db.add(ItemVenda(venda_id=v.id, planta_id=item.plantaId,
+                         quantidade=item.quantidade, preco_cents=item.precoCents))
+    db.commit(); db.refresh(v)
     return _to_dict(v)
 
 @app.post("/v1/eden/vendas/update")
