@@ -14,12 +14,25 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def _build_database_url() -> str:
-    host     = os.getenv("luis_ed_DB_HOST",     "localhost")
-    port     = os.getenv("luis_ed_DB_PORT",     "3306")
-    name     = os.getenv("luis_ed_DB_NAME",     "luiseden")
-    user     = os.getenv("luis_ed_DB_USER",     "luiseden")
-    password = quote_plus(os.getenv("luis_ed_DB_PASSWORD", "senha"))
-    return f"mysql+pymysql://{user}:{password}@{host}:{port}/{name}"
+    host = os.getenv("luis_ed_DB_HOST")
+    port = os.getenv("luis_ed_DB_PORT")
+    name = os.getenv("luis_ed_DB_NAME")
+    user = os.getenv("luis_ed_DB_USER")
+    password = os.getenv("luis_ed_DB_PASSWORD")
+
+    missing = [
+        key for key, value in {
+            "luis_ed_DB_HOST": host,
+            "luis_ed_DB_PORT": port,
+            "luis_ed_DB_NAME": name,
+            "luis_ed_DB_USER": user,
+            "luis_ed_DB_PASSWORD": password,
+        }.items() if not value
+    ]
+    if missing:
+        raise RuntimeError(f"Variáveis de ambiente do banco ausentes: {', '.join(missing)}")
+
+    return f"mysql+pymysql://{user}:{quote_plus(password)}@{host}:{port}/{name}"
 
 DATABASE_URL = _build_database_url()
 SECRET_KEY   = os.getenv("SECRET_KEY", "changeme-secret-key")
