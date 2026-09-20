@@ -73,9 +73,21 @@ pipeline {
                     cd $DEPLOY_PATH
 
                     if [ ! -f .env ]; then
-                        echo "Arquivo .env não encontrado em $DEPLOY_PATH"
-                        echo "Configure o .env no servidor antes de executar o deploy."
-                        exit 1
+                                if [ -n "${SECRET_KEY:-}" ] && [ -n "${luis_ed_DB_HOST:-}" ] && [ -n "${luis_ed_DB_PORT:-}" ] && [ -n "${luis_ed_DB_NAME:-}" ] && [ -n "${luis_ed_DB_USER:-}" ] && [ -n "${luis_ed_DB_PASSWORD:-}" ]; then
+                            umask 077
+                            cat > .env << EOF
+SECRET_KEY=${SECRET_KEY}
+luis_ed_DB_HOST=${luis_ed_DB_HOST}
+luis_ed_DB_PORT=${luis_ed_DB_PORT}
+luis_ed_DB_NAME=${luis_ed_DB_NAME}
+luis_ed_DB_USER=${luis_ed_DB_USER}
+luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+EOF
+                        else
+                            echo "Arquivo .env não encontrado em $DEPLOY_PATH"
+                            echo "Configure o .env no servidor ou as seis variáveis no ambiente do Jenkins."
+                            exit 1
+                        fi
                     fi
 
                     chmod 600 .env
