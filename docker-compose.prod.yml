@@ -42,7 +42,7 @@ services:
       - "traefik.http.services.eden-auth.loadbalancer.server.port=8000"
       - "traefik.http.routers.eden-auth.middlewares=eden-cors"
       - "traefik.http.routers.eden-auth.priority=100"
-      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud,https://peru-lemur-870410.hostingersite.com"
       - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
       - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
       - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"

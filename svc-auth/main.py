@@ -72,7 +72,16 @@ def verify_token(creds: HTTPAuthorizationCredentials = Depends(bearer)):
         raise HTTPException(401, "Token inválido")
 
 app = FastAPI(title="svc-auth")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://peru-lemur-870410.hostingersite.com",
+        "https://srv1023256.hstgr.cloud",
+    ],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
+)
 
 @app.on_event("startup")
 def startup_event():

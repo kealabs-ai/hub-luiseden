@@ -166,7 +166,13 @@ def require_admin(payload=Depends(verify_token)):
 
 app = FastAPI(title="HubLuisEden API")
 app.add_middleware(CORSMiddleware,
-    allow_origins=["https://luiseden.com.br", "https://www.luiseden.com.br", "http://localhost:5173"],
+    allow_origins=[
+        "https://peru-lemur-870410.hostingersite.com",
+        "https://srv1023256.hstgr.cloud",
+        "https://luiseden.com.br",
+        "https://www.luiseden.com.br",
+        "http://localhost:5173",
+    ],
     allow_methods=["*"], allow_headers=["*"], allow_credentials=True)
 
 @app.on_event("startup")
