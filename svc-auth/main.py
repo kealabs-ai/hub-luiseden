@@ -8,7 +8,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 import bcrypt
 from jose import jwt, JWTError
-from sqlalchemy import Column, String, Boolean, DateTime, Enum as SAEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Enum as SAEnum, text
 from sqlalchemy.orm import DeclarativeBase, Session
 
 from database import DatabaseManager
@@ -103,4 +103,6 @@ def me(payload=Depends(verify_token)):
 
 @app.get("/health")
 def health():
+    with db_manager.engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
     return {"status": "ok", "service": "svc-auth"}
