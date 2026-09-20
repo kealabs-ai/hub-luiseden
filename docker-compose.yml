@@ -14,6 +14,18 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hubluiseden.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/`)"
+      - "traefik.http.routers.hubluiseden.entrypoints=https"
+      - "traefik.http.routers.hubluiseden.tls=true"
+      - "traefik.http.routers.hubluiseden.service=hubluiseden"
+      - "traefik.http.services.hubluiseden.loadbalancer.server.port=8000"
+      - "traefik.http.routers.hubluiseden.middlewares=hubluiseden-cors"
+      - "traefik.http.middlewares.hubluiseden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.hubluiseden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.hubluiseden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.hubluiseden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
@@ -35,6 +47,19 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-auth.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/auth`)"
+      - "traefik.http.routers.eden-auth.entrypoints=https"
+      - "traefik.http.routers.eden-auth.tls=true"
+      - "traefik.http.routers.eden-auth.service=eden-auth"
+      - "traefik.http.services.eden-auth.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-auth.middlewares=eden-cors"
+      - "traefik.http.routers.eden-auth.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
@@ -56,6 +81,19 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-catalogo.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/catalogo`)"
+      - "traefik.http.routers.eden-catalogo.entrypoints=https"
+      - "traefik.http.routers.eden-catalogo.tls=true"
+      - "traefik.http.routers.eden-catalogo.service=eden-catalogo"
+      - "traefik.http.services.eden-catalogo.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-catalogo.middlewares=eden-cors"
+      - "traefik.http.routers.eden-catalogo.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
@@ -77,6 +115,19 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-vendas.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/vendas`)"
+      - "traefik.http.routers.eden-vendas.entrypoints=https"
+      - "traefik.http.routers.eden-vendas.tls=true"
+      - "traefik.http.routers.eden-vendas.service=eden-vendas"
+      - "traefik.http.services.eden-vendas.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-vendas.middlewares=eden-cors"
+      - "traefik.http.routers.eden-vendas.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
@@ -98,6 +149,19 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-financeiro.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/financeiro`)"
+      - "traefik.http.routers.eden-financeiro.entrypoints=https"
+      - "traefik.http.routers.eden-financeiro.tls=true"
+      - "traefik.http.routers.eden-financeiro.service=eden-financeiro"
+      - "traefik.http.services.eden-financeiro.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-financeiro.middlewares=eden-cors"
+      - "traefik.http.routers.eden-financeiro.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
@@ -119,6 +183,19 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-orcamentos.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/orcamentos`)"
+      - "traefik.http.routers.eden-orcamentos.entrypoints=https"
+      - "traefik.http.routers.eden-orcamentos.tls=true"
+      - "traefik.http.routers.eden-orcamentos.service=eden-orcamentos"
+      - "traefik.http.services.eden-orcamentos.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-orcamentos.middlewares=eden-cors"
+      - "traefik.http.routers.eden-orcamentos.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
@@ -140,6 +217,19 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-manutencao.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/manutencao`)"
+      - "traefik.http.routers.eden-manutencao.entrypoints=https"
+      - "traefik.http.routers.eden-manutencao.tls=true"
+      - "traefik.http.routers.eden-manutencao.service=eden-manutencao"
+      - "traefik.http.services.eden-manutencao.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-manutencao.middlewares=eden-cors"
+      - "traefik.http.routers.eden-manutencao.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
@@ -161,6 +251,19 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-fornecedores.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/fornecedores`)"
+      - "traefik.http.routers.eden-fornecedores.entrypoints=https"
+      - "traefik.http.routers.eden-fornecedores.tls=true"
+      - "traefik.http.routers.eden-fornecedores.service=eden-fornecedores"
+      - "traefik.http.services.eden-fornecedores.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-fornecedores.middlewares=eden-cors"
+      - "traefik.http.routers.eden-fornecedores.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
@@ -182,6 +285,19 @@ services:
       - luis_ed_DB_USER=${luis_ed_DB_USER}
       - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-usuarios.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/usuarios`)"
+      - "traefik.http.routers.eden-usuarios.entrypoints=https"
+      - "traefik.http.routers.eden-usuarios.tls=true"
+      - "traefik.http.routers.eden-usuarios.service=eden-usuarios"
+      - "traefik.http.services.eden-usuarios.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-usuarios.middlewares=eden-cors"
+      - "traefik.http.routers.eden-usuarios.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
       interval: 60s
