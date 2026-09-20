@@ -24,4 +24,3 @@ Thumbs.db
 .vscode/
 .idea/
 docker-compose.override.yml
-.env.example
