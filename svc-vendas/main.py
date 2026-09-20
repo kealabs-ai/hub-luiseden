@@ -28,6 +28,7 @@ class Venda(Base):
     id           = Column(String(36),  primary_key=True, default=lambda: str(uuid.uuid4()))
     usuario_id   = Column(String(36),  nullable=False)
     cliente_nome = Column(String(255), nullable=True)
+    data_venda   = Column(DateTime,    nullable=True)
     total_cents  = Column(Integer,     nullable=False, default=0)
     status       = Column(String(50),  default="concluida")
     observacoes  = Column(Text,        nullable=True)
@@ -65,6 +66,7 @@ def health():
 
 class VendaIn(BaseModel):
     clienteNome: Optional[str] = None
+    dataVenda: Optional[datetime] = None
     totalCents: int
     status: str = "concluida"
     observacoes: Optional[str] = None
@@ -72,6 +74,7 @@ class VendaIn(BaseModel):
 class VendaUpdate(BaseModel):
     id: str
     clienteNome: Optional[str] = None
+    dataVenda: Optional[datetime] = None
     totalCents: Optional[int] = None
     status: Optional[str] = None
     observacoes: Optional[str] = None
@@ -81,6 +84,7 @@ class VendaGetIn(BaseModel):
 
 def _to_dict(v: Venda):
     return {"id": v.id, "usuarioId": v.usuario_id, "clienteNome": v.cliente_nome,
+            "dataVenda": v.data_venda.isoformat(),
             "totalCents": v.total_cents, "status": v.status, "observacoes": v.observacoes,
             "createdAt": v.created_at.isoformat(), "updatedAt": v.updated_at.isoformat()}
 
@@ -97,7 +101,8 @@ def get_venda(body: VendaGetIn, db: Session = Depends(get_db), payload=Depends(v
 @app.post("/v1/eden/vendas", status_code=201)
 def create_venda(body: VendaIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
     v = Venda(usuario_id=payload["sub"], cliente_nome=body.clienteNome,
-              total_cents=body.totalCents, status=body.status, observacoes=body.observacoes)
+              data_venda=body.dataVenda or datetime.utcnow(), total_cents=body.totalCents,
+              status=body.status, observacoes=body.observacoes)
     db.add(v); db.commit(); db.refresh(v)
     return _to_dict(v)
 
@@ -107,6 +112,7 @@ def update_venda(body: VendaUpdate, db: Session = Depends(get_db), payload=Depen
     if not v: raise HTTPException(404, "Não encontrado")
     data = body.model_dump(exclude_none=True, exclude={"id"})
     if "clienteNome" in data: v.cliente_nome = data.pop("clienteNome")
+    if "dataVenda" in data: v.data_venda = data.pop("dataVenda")
     if "totalCents"  in data: v.total_cents  = data.pop("totalCents")
     for k, val in data.items(): setattr(v, k, val)
     v.updated_at = datetime.utcnow()

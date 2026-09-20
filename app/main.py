@@ -69,6 +69,7 @@ class Venda(Base):
     id           = Column(String(36),  primary_key=True, default=lambda: str(uuid.uuid4()))
     usuario_id   = Column(String(36),  nullable=False)
     cliente_nome = Column(String(255), nullable=True)
+    data_venda   = Column(DateTime,    nullable=False, default=datetime.utcnow)
     total_cents  = Column(Integer,     nullable=False, default=0)
     status       = Column(String(50),  default="concluida")
     observacoes  = Column(Text,        nullable=True)
@@ -261,12 +262,14 @@ def delete_planta(body: dict, db: Session = Depends(get_db), payload=Depends(ver
 
 class VendaIn(BaseModel):
     clienteNome: Optional[str] = None
+    dataVenda: Optional[datetime] = None
     totalCents: int
     status: str = "concluida"
     observacoes: Optional[str] = None
 
 def _venda_dict(v: Venda):
     return {"id": v.id, "usuarioId": v.usuario_id, "clienteNome": v.cliente_nome,
+            "dataVenda": v.data_venda.isoformat(),
             "totalCents": v.total_cents, "status": v.status,
             "createdAt": v.created_at.isoformat()}
 
@@ -277,7 +280,8 @@ def list_vendas(db: Session = Depends(get_db), payload=Depends(verify_token)):
 @app.post("/v1/eden/vendas", status_code=201)
 def create_venda(body: VendaIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
     v = Venda(usuario_id=payload["sub"], cliente_nome=body.clienteNome,
-              total_cents=body.totalCents, status=body.status, observacoes=body.observacoes)
+              data_venda=body.dataVenda or datetime.utcnow(), total_cents=body.totalCents,
+              status=body.status, observacoes=body.observacoes)
     db.add(v); db.commit(); db.refresh(v)
     return _venda_dict(v)
 

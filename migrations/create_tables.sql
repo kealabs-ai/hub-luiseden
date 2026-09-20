@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS vendas (
     id           VARCHAR(36)  PRIMARY KEY,
     usuario_id   VARCHAR(36)  NOT NULL,
     cliente_nome VARCHAR(255),
+    data_venda   DATETIME DEFAULT CURRENT_TIMESTAMP,
     total_cents  INT          NOT NULL DEFAULT 0,
     status       VARCHAR(50)  DEFAULT 'concluida',
     observacoes  TEXT,
