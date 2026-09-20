@@ -101,6 +101,10 @@ class Transacao(Base):
     created_at  = Column(DateTime,    default=datetime.utcnow)
     updated_at  = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
 
+class VendaCancelIn(BaseModel):
+    id: str
+    motivo: Optional[str] = None
+
 class Orcamento(Base):
     __tablename__ = "orcamentos"
     id           = Column(String(36),  primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -312,9 +316,34 @@ def create_venda(body: VendaIn, db: Session = Depends(get_db), payload=Depends(v
     db.commit(); db.refresh(v)
     return _venda_dict(v)
 
+@app.post("/v1/eden/vendas/cancel")
+def cancel_venda(body: VendaCancelIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
+    venda = db.query(Venda).filter_by(id=body.id).with_for_update().first()
+    if not venda:
+        raise HTTPException(404, "Venda não encontrada")
+    if venda.status == "cancelada":
+        raise HTTPException(409, "A venda já está cancelada")
+
+    items = db.query(ItemVenda).filter_by(venda_id=venda.id).all()
+    for item in items:
+        planta = db.query(Planta).filter_by(id=item.planta_id).with_for_update().first()
+        if planta:
+            planta.estoque += item.quantidade
+
+    motivo = body.motivo or "Sem motivo informado"
+    venda.status = "cancelada"
+    venda.observacoes = f"{venda.observacoes or ''} Cancelamento: {motivo}".strip()
+    db.add(Transacao(usuario_id=payload["sub"], tipo="saida", categoria="cancelamento_venda",
+                     descricao=f"Cancelamento da venda {venda.id}: {motivo}",
+                     valor_cents=venda.total_cents,
+                     data=(venda.data_venda or datetime.utcnow()).date().isoformat()))
+    venda.updated_at = datetime.utcnow()
+    db.commit(); db.refresh(venda)
+    return _venda_dict(venda)
+
 @app.get("/v1/eden/vendas/dashboard")
 def vendas_dashboard(db: Session = Depends(get_db), payload=Depends(verify_token)):
-    vendas = db.query(Venda).all()
+    vendas = db.query(Venda).filter(Venda.status != "cancelada").all()
     return {"totalVendas": len(vendas),
             "totalCents": sum(v.total_cents for v in vendas),
             "concluidas": sum(1 for v in vendas if v.status == "concluida")}
