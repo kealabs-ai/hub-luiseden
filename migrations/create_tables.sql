@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email      VARCHAR(255) NOT NULL UNIQUE,
     senha_hash VARCHAR(255) NOT NULL,
     role       ENUM('admin','operador','cliente') NOT NULL DEFAULT 'operador',
+    permissoes TEXT NULL,
     ativo      BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
