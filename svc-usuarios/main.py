@@ -1,4 +1,4 @@
-import os, uuid, enum
+import os, uuid, enum, json
 from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends
@@ -7,7 +7,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 import bcrypt
 from jose import jwt, JWTError
-from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Enum as SAEnum
+from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Enum as SAEnum, Text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from dotenv import load_dotenv
 load_dotenv()
@@ -39,6 +39,8 @@ class Usuario(Base):
     email      = Column(String(255), nullable=False, unique=True)
     senha_hash = Column(String(255), nullable=False)
     role       = Column(SAEnum(RoleEnum, name="role_enum"), nullable=False, default=RoleEnum.operador)
+    permissoes = Column(Text, nullable=True)
+    permissoes = Column(Text, nullable=True)
     ativo      = Column(Boolean,     default=True)
     created_at = Column(DateTime,    default=datetime.utcnow)
     updated_at = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -74,6 +76,7 @@ class UsuarioIn(BaseModel):
     email: EmailStr
     senha: str
     role: str = "operador"
+    permissoes: Optional[list[str]] = None
 
 class UsuarioUpdate(BaseModel):
     id: str
@@ -81,13 +84,25 @@ class UsuarioUpdate(BaseModel):
     email: Optional[EmailStr] = None
     role: Optional[str] = None
     ativo: Optional[bool] = None
+    permissoes: Optional[list[str]] = None
+    permissoes: Optional[list[str]] = None
 
 class UsuarioGetIn(BaseModel):
     id: str
 
 def _to_dict(u: Usuario):
     return {"id": u.id, "nome": u.nome, "email": u.email, "role": u.role,
-            "ativo": u.ativo, "createdAt": u.created_at.isoformat()}
+            "ativo": u.ativo, "permissoes": _get_permissions(u), "createdAt": u.created_at.isoformat()}
+
+def _get_permissions(user: Usuario):
+    if user.role == RoleEnum.admin or user.role == "admin":
+        return ["dashboard", "catalog", "sales", "budget", "cashflow", "maintenance", "supplier", "users"]
+    if user.permissoes:
+        try:
+            return json.loads(user.permissoes)
+        except json.JSONDecodeError:
+            pass
+    return {"operador": ["dashboard", "catalog", "sales", "cashflow"], "cliente": ["dashboard"]}.get(str(user.role), ["dashboard"])
 
 @app.get("/v1/eden/usuarios")
 def list_usuarios(db: Session = Depends(get_db), payload=Depends(require_admin)):
@@ -103,7 +118,8 @@ def get_usuario(body: UsuarioGetIn, db: Session = Depends(get_db), payload=Depen
 def create_usuario(body: UsuarioIn, db: Session = Depends(get_db), payload=Depends(require_admin)):
     if db.query(Usuario).filter_by(email=body.email).first():
         raise HTTPException(409, "E-mail já cadastrado")
-    u = Usuario(nome=body.nome, email=body.email, senha_hash=_hash(body.senha), role=body.role)
+    u = Usuario(nome=body.nome, email=body.email, senha_hash=_hash(body.senha), role=body.role,
+                permissoes=json.dumps(body.permissoes) if body.permissoes is not None else None)
     db.add(u); db.commit(); db.refresh(u)
     return _to_dict(u)
 
@@ -112,6 +128,7 @@ def update_usuario(body: UsuarioUpdate, db: Session = Depends(get_db), payload=D
     u = db.query(Usuario).filter_by(id=body.id).first()
     if not u: raise HTTPException(404, "Não encontrado")
     data = body.model_dump(exclude_none=True, exclude={"id"})
+    if "permissoes" in data: data["permissoes"] = json.dumps(data["permissoes"])
     for k, v in data.items(): setattr(u, k, v)
     u.updated_at = datetime.utcnow()
     db.commit(); db.refresh(u)

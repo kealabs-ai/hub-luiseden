@@ -1,4 +1,4 @@
-import os, uuid, enum
+import os, uuid, enum, json
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Depends
 from dotenv import load_dotenv
@@ -8,7 +8,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 import bcrypt
 from jose import jwt, JWTError
-from sqlalchemy import Column, String, Boolean, DateTime, Enum as SAEnum, text
+from sqlalchemy import Column, String, Boolean, DateTime, Enum as SAEnum, Text, text
 from sqlalchemy.orm import DeclarativeBase, Session
 
 from database import DatabaseManager
@@ -45,6 +45,7 @@ class Usuario(Base):
     email      = Column(String(255), nullable=False, unique=True)
     senha_hash = Column(String(255), nullable=False)
     role       = Column(SAEnum(RoleEnum, name="role_enum"), nullable=False, default=RoleEnum.operador)
+    permissoes = Column(Text, nullable=True)
     ativo      = Column(Boolean,     default=True)
     created_at = Column(DateTime,    default=datetime.utcnow)
     updated_at = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -98,13 +99,26 @@ class AuthOut(BaseModel):
     role: str
     accessToken: str
 
+    permissoes: list[str] = []
+
+def _get_permissions(user: Usuario):
+    if user.role == RoleEnum.admin or user.role == "admin":
+        return ["dashboard", "catalog", "sales", "budget", "cashflow", "maintenance", "supplier", "users"]
+    if user.permissoes:
+        try:
+            return json.loads(user.permissoes)
+        except json.JSONDecodeError:
+            pass
+    return {"operador": ["dashboard", "catalog", "sales", "cashflow"], "cliente": ["dashboard"]}.get(str(user.role), ["dashboard"])
+
 @app.post("/v1/eden/auth/login", response_model=AuthOut)
 def login(body: LoginIn, db: Session = Depends(get_db)):
     user = db.query(Usuario).filter_by(email=body.email, ativo=True).first()
     if not user or not _verify(body.senha, user.senha_hash):
         raise HTTPException(401, "Credenciais inválidas")
     return AuthOut(id=user.id, nome=user.nome, email=user.email,
-                   role=user.role, accessToken=_make_token(user))
+                   role=user.role, accessToken=_make_token(user),
+                   permissoes=_get_permissions(user))
 
 @app.get("/v1/eden/auth/me")
 def me(payload=Depends(verify_token)):
