@@ -25,17 +25,19 @@ class Base(DeclarativeBase): pass
 
 class Planta(Base):
     __tablename__ = "plantas"
-    id          = Column(String(36),  primary_key=True, default=lambda: str(uuid.uuid4()))
-    nome        = Column(String(255), nullable=False)
-    categoria   = Column(String(100), nullable=True)
-    descricao   = Column(Text,        nullable=True)
-    preco_cents = Column(Integer,     nullable=False, default=0)
-    custo_cents = Column(Integer,     nullable=False, default=0)
-    estoque     = Column(Integer,     nullable=False, default=0)
-    imagem_url  = Column(String(500), nullable=True)
-    ativo       = Column(Boolean,     default=True)
-    created_at  = Column(DateTime,    default=datetime.utcnow)
-    updated_at  = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
+    id           = Column(String(36),  primary_key=True, default=lambda: str(uuid.uuid4()))
+    nome         = Column(String(255), nullable=False)
+    categoria    = Column(String(100), nullable=True)
+    descricao    = Column(Text,        nullable=True)
+    preco_cents  = Column(Integer,     nullable=False, default=0)
+    custo_cents  = Column(Integer,     nullable=False, default=0)
+    estoque      = Column(Integer,     nullable=False, default=0)
+    imagem_url   = Column(String(500), nullable=True)
+    fornecedor_id = Column(String(36), nullable=True)
+    cotacao_id   = Column(String(36),  nullable=True)
+    ativo        = Column(Boolean,     default=True)
+    created_at   = Column(DateTime,    default=datetime.utcnow)
+    updated_at   = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
 
 def get_db():
     for db in db_manager.get_db():
@@ -83,14 +85,18 @@ class PlantaDeleteIn(BaseModel):
 
 class QuotationApprovalIn(BaseModel):
     cotacaoId: str
-    descricao: str
+    fornecedorId: Optional[str] = None
+    nome: str
+    descricao: Optional[str] = None
     quantidade: int
     precoCents: int
     custoCents: int
+    categoria: Optional[str] = None
 
 def _to_dict(p: Planta):
     return {"id": p.id, "nome": p.nome, "categoria": p.categoria, "descricao": p.descricao,
-            "precoCents": p.preco_cents, "custoCents": p.custo_cents, "estoque": p.estoque, "imagemUrl": p.imagem_url,
+            "precoCents": p.preco_cents, "custoCents": p.custo_cents, "estoque": p.estoque,
+            "imagemUrl": p.imagem_url, "fornecedorId": p.fornecedor_id, "cotacaoId": p.cotacao_id,
             "ativo": p.ativo, "createdAt": p.created_at.isoformat(), "updatedAt": p.updated_at.isoformat()}
 
 @app.get("/v1/eden/catalogo")
@@ -137,16 +143,22 @@ def delete_planta(body: PlantaDeleteIn, db: Session = Depends(get_db), payload=D
 
 @app.post("/v1/eden/catalogo/from-quotation")
 def add_from_quotation(body: QuotationApprovalIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
-    existing = db.query(Planta).filter_by(nome=body.descricao).first()
+    existing = db.query(Planta).filter_by(nome=body.nome).first()
     if existing:
-        existing.estoque += body.quantidade
-        existing.preco_cents = body.precoCents
-        existing.custo_cents = body.custoCents
+        existing.estoque      += body.quantidade
+        existing.preco_cents   = body.precoCents
+        existing.custo_cents   = body.custoCents
+        existing.cotacao_id    = body.cotacaoId
+        if body.categoria:    existing.categoria    = body.categoria
+        if body.fornecedorId: existing.fornecedor_id = body.fornecedorId
+        if body.descricao:    existing.descricao    = body.descricao
         existing.updated_at = datetime.utcnow()
         db.commit(); db.refresh(existing)
         return {"ok": True, "action": "updated", "planta": _to_dict(existing)}
     else:
-        p = Planta(nome=body.descricao, preco_cents=body.precoCents,
-                   custo_cents=body.custoCents, estoque=body.quantidade)
+        p = Planta(nome=body.nome, descricao=body.descricao, categoria=body.categoria,
+                   preco_cents=body.precoCents, custo_cents=body.custoCents,
+                   estoque=body.quantidade, fornecedor_id=body.fornecedorId,
+                   cotacao_id=body.cotacaoId)
         db.add(p); db.commit(); db.refresh(p)
         return {"ok": True, "action": "created", "planta": _to_dict(p)}

@@ -47,6 +47,7 @@ class Cotacao(Base):
     preco_custo_cents = Column(Integer,   nullable=False, default=0)
     preco_venda_cents = Column(Integer,   nullable=False, default=0)
     aprovada        = Column(Boolean,     default=False)
+    categoria       = Column(String(100), nullable=True)
     ativo           = Column(Boolean,     default=True)
     created_at      = Column(DateTime,    default=datetime.utcnow)
     updated_at      = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -99,6 +100,7 @@ class CotacaoIn(BaseModel):
     quantidade: int = 1
     precoCustoCents: int
     precoVendaCents: int
+    categoria: Optional[str] = None
 
 class CotacaoUpdate(BaseModel):
     id: str
@@ -107,6 +109,7 @@ class CotacaoUpdate(BaseModel):
     precoCustoCents: Optional[int] = None
     precoVendaCents: Optional[int] = None
     aprovada: Optional[bool] = None
+    categoria: Optional[str] = None
     ativo: Optional[bool] = None
 
 class CotacaoGetIn(BaseModel):
@@ -123,8 +126,9 @@ def _to_dict(f: Fornecedor):
 def _cotacao_to_dict(c: Cotacao):
     return {"id": c.id, "fornecedorId": c.fornecedor_id, "descricao": c.descricao,
             "quantidade": c.quantidade, "precoCustoCents": c.preco_custo_cents,
-            "precoVendaCents": c.preco_venda_cents, "aprovada": c.aprovada, "ativo": c.ativo,
-            "createdAt": c.created_at.isoformat(), "updatedAt": c.updated_at.isoformat()}
+            "precoVendaCents": c.preco_venda_cents, "aprovada": c.aprovada,
+            "categoria": c.categoria,
+            "ativo": c.ativo, "createdAt": c.created_at.isoformat(), "updatedAt": c.updated_at.isoformat()}
 
 @app.get("/v1/eden/fornecedores")
 def list_fornecedores(db: Session = Depends(get_db), payload=Depends(verify_token)):
@@ -175,7 +179,7 @@ def get_cotacao(body: CotacaoGetIn, db: Session = Depends(get_db), payload=Depen
 def create_cotacao(body: CotacaoIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
     c = Cotacao(fornecedor_id=body.fornecedorId, descricao=body.descricao,
                 quantidade=body.quantidade, preco_custo_cents=body.precoCustoCents,
-                preco_venda_cents=body.precoVendaCents)
+                preco_venda_cents=body.precoVendaCents, categoria=body.categoria)
     db.add(c); db.commit(); db.refresh(c)
     return _cotacao_to_dict(c)
 
@@ -215,10 +219,13 @@ def approve_cotacao(body: CotacaoApproveIn, db: Session = Depends(get_db), creds
                 f"{CATALOGO_URL}/v1/eden/catalogo/from-quotation",
                 json={
                     "cotacaoId": c.id,
+                    "fornecedorId": c.fornecedor_id,
+                    "nome": c.descricao,
                     "descricao": c.descricao,
                     "quantidade": c.quantidade,
                     "precoCents": c.preco_venda_cents,
-                    "custoCents": c.preco_custo_cents
+                    "custoCents": c.preco_custo_cents,
+                    "categoria": c.categoria
                 },
                 headers=headers,
                 timeout=10
