@@ -9,6 +9,7 @@ from jose import jwt, JWTError
 from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Integer, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from dotenv import load_dotenv
+import httpx
 load_dotenv()
 
 from database import DatabaseManager
@@ -18,6 +19,7 @@ SessionLocal = db_manager.SessionLocal
 DATABASE_URL = db_manager.config.url
 SECRET_KEY   = os.getenv("SECRET_KEY", "changeme-secret-key")
 ALGORITHM    = "HS256"
+CATALOGO_URL = os.getenv("CATALOGO_URL", "http://localhost:8002")
 
 bearer       = HTTPBearer()
 
@@ -44,6 +46,7 @@ class Cotacao(Base):
     quantidade      = Column(Integer,     nullable=False, default=1)
     preco_custo_cents = Column(Integer,   nullable=False, default=0)
     preco_venda_cents = Column(Integer,   nullable=False, default=0)
+    aprovada        = Column(Boolean,     default=False)
     ativo           = Column(Boolean,     default=True)
     created_at      = Column(DateTime,    default=datetime.utcnow)
     updated_at      = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -103,9 +106,13 @@ class CotacaoUpdate(BaseModel):
     quantidade: Optional[int] = None
     precoCustoCents: Optional[int] = None
     precoVendaCents: Optional[int] = None
+    aprovada: Optional[bool] = None
     ativo: Optional[bool] = None
 
 class CotacaoGetIn(BaseModel):
+    id: str
+
+class CotacaoApproveIn(BaseModel):
     id: str
 
 def _to_dict(f: Fornecedor):
@@ -116,7 +123,7 @@ def _to_dict(f: Fornecedor):
 def _cotacao_to_dict(c: Cotacao):
     return {"id": c.id, "fornecedorId": c.fornecedor_id, "descricao": c.descricao,
             "quantidade": c.quantidade, "precoCustoCents": c.preco_custo_cents,
-            "precoVendaCents": c.preco_venda_cents, "ativo": c.ativo,
+            "precoVendaCents": c.preco_venda_cents, "aprovada": c.aprovada, "ativo": c.ativo,
             "createdAt": c.created_at.isoformat(), "updatedAt": c.updated_at.isoformat()}
 
 @app.get("/v1/eden/fornecedores")
@@ -191,3 +198,32 @@ def delete_cotacao(body: CotacaoGetIn, db: Session = Depends(get_db), payload=De
     if not c: raise HTTPException(404, "Não encontrado")
     c.ativo = False; db.commit()
     return {"ok": True}
+
+@app.post("/v1/eden/fornecedores/cotacoes/approve")
+def approve_cotacao(body: CotacaoApproveIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
+    c = db.query(Cotacao).filter_by(id=body.id).first()
+    if not c: raise HTTPException(404, "Cotação não encontrada")
+    c.aprovada = True
+    c.updated_at = datetime.utcnow()
+    db.commit()
+    
+    try:
+        token = payload.get('token', '')
+        headers = {"Authorization": f"Bearer {token}"}
+        with httpx.Client() as client:
+            client.post(
+                f"{CATALOGO_URL}/v1/eden/catalogo/from-quotation",
+                json={
+                    "cotacaoId": c.id,
+                    "descricao": c.descricao,
+                    "quantidade": c.quantidade,
+                    "precoCents": c.preco_venda_cents,
+                    "custoCents": c.preco_custo_cents
+                },
+                headers=headers,
+                timeout=10
+            )
+    except Exception as e:
+        print(f"Erro ao integrar com catálogo: {e}")
+    
+    return _cotacao_to_dict(c)

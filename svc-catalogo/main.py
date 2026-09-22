@@ -81,6 +81,13 @@ class PlantaUpdate(BaseModel):
 class PlantaDeleteIn(BaseModel):
     id: str
 
+class QuotationApprovalIn(BaseModel):
+    cotacaoId: str
+    descricao: str
+    quantidade: int
+    precoCents: int
+    custoCents: int
+
 def _to_dict(p: Planta):
     return {"id": p.id, "nome": p.nome, "categoria": p.categoria, "descricao": p.descricao,
             "precoCents": p.preco_cents, "custoCents": p.custo_cents, "estoque": p.estoque, "imagemUrl": p.imagem_url,
@@ -127,3 +134,19 @@ def delete_planta(body: PlantaDeleteIn, db: Session = Depends(get_db), payload=D
     if not p: raise HTTPException(404, "Não encontrado")
     p.ativo = False; db.commit()
     return {"ok": True}
+
+@app.post("/v1/eden/catalogo/from-quotation")
+def add_from_quotation(body: QuotationApprovalIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
+    existing = db.query(Planta).filter_by(nome=body.descricao).first()
+    if existing:
+        existing.estoque += body.quantidade
+        existing.preco_cents = body.precoCents
+        existing.custo_cents = body.custoCents
+        existing.updated_at = datetime.utcnow()
+        db.commit(); db.refresh(existing)
+        return {"ok": True, "action": "updated", "planta": _to_dict(existing)}
+    else:
+        p = Planta(nome=body.descricao, preco_cents=body.precoCents,
+                   custo_cents=body.custoCents, estoque=body.quantidade)
+        db.add(p); db.commit(); db.refresh(p)
+        return {"ok": True, "action": "created", "planta": _to_dict(p)}
