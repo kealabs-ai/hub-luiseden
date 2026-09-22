@@ -138,19 +138,19 @@ EOF
 
                     for CONTAINER in hubluiseden eden-svc-auth eden-svc-catalogo eden-svc-vendas eden-svc-financeiro eden-svc-orcamentos eden-svc-manutencao eden-svc-fornecedores eden-svc-usuarios; do
                         echo "  Verificando $CONTAINER..."
-                        for i in 1 2 3 4 5 6 7 8 9 10; do
+                        for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18; do
                             HEALTH_STATUS=$($DOCKER inspect --format="{{.State.Health.Status}}" $CONTAINER 2>/dev/null || echo "none")
-                            echo "    Tentativa $i/10: $CONTAINER = $HEALTH_STATUS"
+                            echo "    Tentativa $i/18: $CONTAINER = $HEALTH_STATUS"
                             if [ "$HEALTH_STATUS" = "healthy" ]; then
                                 echo "  ✔ $CONTAINER → HEALTHY"
                                 break
                             fi
-                            if [ $i -eq 10 ]; then
+                            if [ $i -eq 18 ]; then
                                 echo "  ✘ $CONTAINER não ficou healthy"
                                 $DOCKER logs $CONTAINER | tail -20
                                 exit 1
                             fi
-                            sleep 3
+                            sleep 5
                         done
                     done
 
