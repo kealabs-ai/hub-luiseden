@@ -98,6 +98,8 @@ app.add_middleware(
     allow_origins=[
         "https://peru-lemur-870410.hostingersite.com",
         "https://srv1023256.hstgr.cloud",
+        "http://localhost:5173",
+        "http://localhost:3000",
     ],
     allow_methods=["*"],
     allow_headers=["*"],
