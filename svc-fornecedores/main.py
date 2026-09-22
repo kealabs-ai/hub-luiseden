@@ -200,7 +200,7 @@ def delete_cotacao(body: CotacaoGetIn, db: Session = Depends(get_db), payload=De
     return {"ok": True}
 
 @app.post("/v1/eden/fornecedores/cotacoes/approve")
-def approve_cotacao(body: CotacaoApproveIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
+def approve_cotacao(body: CotacaoApproveIn, db: Session = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer)):
     c = db.query(Cotacao).filter_by(id=body.id).first()
     if not c: raise HTTPException(404, "Cotação não encontrada")
     c.aprovada = True
@@ -208,10 +208,10 @@ def approve_cotacao(body: CotacaoApproveIn, db: Session = Depends(get_db), paylo
     db.commit()
     
     try:
-        token = payload.get('token', '')
+        token = creds.credentials
         headers = {"Authorization": f"Bearer {token}"}
         with httpx.Client() as client:
-            client.post(
+            response = client.post(
                 f"{CATALOGO_URL}/v1/eden/catalogo/from-quotation",
                 json={
                     "cotacaoId": c.id,
@@ -223,6 +223,8 @@ def approve_cotacao(body: CotacaoApproveIn, db: Session = Depends(get_db), paylo
                 headers=headers,
                 timeout=10
             )
+            if response.status_code not in [200, 201]:
+                print(f"Erro ao integrar com catálogo: {response.status_code} - {response.text}")
     except Exception as e:
         print(f"Erro ao integrar com catálogo: {e}")
     
