@@ -326,6 +326,42 @@ services:
       - easypanel
       - eden-net
 
+  svc-clientes:
+    build: ./svc-clientes
+    container_name: eden-svc-clientes
+    ports:
+      - "9009:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-clientes.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/clientes`)"
+      - "traefik.http.routers.eden-clientes.entrypoints=https"
+      - "traefik.http.routers.eden-clientes.tls=true"
+      - "traefik.http.routers.eden-clientes.service=eden-clientes"
+      - "traefik.http.services.eden-clientes.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-clientes.middlewares=eden-cors"
+      - "traefik.http.routers.eden-clientes.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud,https://peru-lemur-870410.hostingersite.com,http://localhost:5173"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - easypanel
+      - eden-net
+
 networks:
   easypanel:
     external: true
