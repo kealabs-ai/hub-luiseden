@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 from jose import jwt, JWTError
-from sqlalchemy import create_engine, Column, String, Boolean, DateTime
+from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Integer, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from dotenv import load_dotenv
 load_dotenv()
@@ -35,6 +35,18 @@ class Fornecedor(Base):
     ativo      = Column(Boolean,     default=True)
     created_at = Column(DateTime,    default=datetime.utcnow)
     updated_at = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class Cotacao(Base):
+    __tablename__ = "cotacoes"
+    id              = Column(String(36),  primary_key=True, default=lambda: str(uuid.uuid4()))
+    fornecedor_id   = Column(String(36),  ForeignKey("fornecedores.id"), nullable=False)
+    descricao       = Column(String(255), nullable=False)
+    quantidade      = Column(Integer,     nullable=False, default=1)
+    preco_custo_cents = Column(Integer,   nullable=False, default=0)
+    preco_venda_cents = Column(Integer,   nullable=False, default=0)
+    ativo           = Column(Boolean,     default=True)
+    created_at      = Column(DateTime,    default=datetime.utcnow)
+    updated_at      = Column(DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
 
 def get_db():
     for db in db_manager.get_db():
@@ -78,10 +90,34 @@ class FornecedorUpdate(BaseModel):
 class FornecedorGetIn(BaseModel):
     id: str
 
+class CotacaoIn(BaseModel):
+    fornecedorId: str
+    descricao: str
+    quantidade: int = 1
+    precoCustoCents: int
+    precoVendaCents: int
+
+class CotacaoUpdate(BaseModel):
+    id: str
+    descricao: Optional[str] = None
+    quantidade: Optional[int] = None
+    precoCustoCents: Optional[int] = None
+    precoVendaCents: Optional[int] = None
+    ativo: Optional[bool] = None
+
+class CotacaoGetIn(BaseModel):
+    id: str
+
 def _to_dict(f: Fornecedor):
     return {"id": f.id, "nome": f.nome, "email": f.email, "telefone": f.telefone,
             "cpfCnpj": f.cpf_cnpj, "endereco": f.endereco, "categoria": f.categoria,
             "ativo": f.ativo, "createdAt": f.created_at.isoformat(), "updatedAt": f.updated_at.isoformat()}
+
+def _cotacao_to_dict(c: Cotacao):
+    return {"id": c.id, "fornecedorId": c.fornecedor_id, "descricao": c.descricao,
+            "quantidade": c.quantidade, "precoCustoCents": c.preco_custo_cents,
+            "precoVendaCents": c.preco_venda_cents, "ativo": c.ativo,
+            "createdAt": c.created_at.isoformat(), "updatedAt": c.updated_at.isoformat()}
 
 @app.get("/v1/eden/fornecedores")
 def list_fornecedores(db: Session = Depends(get_db), payload=Depends(verify_token)):
@@ -116,4 +152,42 @@ def delete_fornecedor(body: FornecedorGetIn, db: Session = Depends(get_db), payl
     f = db.query(Fornecedor).filter_by(id=body.id).first()
     if not f: raise HTTPException(404, "Não encontrado")
     f.ativo = False; db.commit()
+    return {"ok": True}
+
+@app.get("/v1/eden/fornecedores/cotacoes")
+def list_cotacoes(db: Session = Depends(get_db), payload=Depends(verify_token)):
+    return [_cotacao_to_dict(c) for c in db.query(Cotacao).filter_by(ativo=True).all()]
+
+@app.post("/v1/eden/fornecedores/cotacoes/get")
+def get_cotacao(body: CotacaoGetIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
+    c = db.query(Cotacao).filter_by(id=body.id).first()
+    if not c: raise HTTPException(404, "Não encontrado")
+    return _cotacao_to_dict(c)
+
+@app.post("/v1/eden/fornecedores/cotacoes", status_code=201)
+def create_cotacao(body: CotacaoIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
+    c = Cotacao(fornecedor_id=body.fornecedorId, descricao=body.descricao,
+                quantidade=body.quantidade, preco_custo_cents=body.precoCustoCents,
+                preco_venda_cents=body.precoVendaCents)
+    db.add(c); db.commit(); db.refresh(c)
+    return _cotacao_to_dict(c)
+
+@app.post("/v1/eden/fornecedores/cotacoes/update")
+def update_cotacao(body: CotacaoUpdate, db: Session = Depends(get_db), payload=Depends(verify_token)):
+    c = db.query(Cotacao).filter_by(id=body.id).first()
+    if not c: raise HTTPException(404, "Não encontrado")
+    data = body.model_dump(exclude_none=True, exclude={"id"})
+    for k, v in data.items():
+        if k == "precoCustoCents": setattr(c, "preco_custo_cents", v)
+        elif k == "precoVendaCents": setattr(c, "preco_venda_cents", v)
+        else: setattr(c, k, v)
+    c.updated_at = datetime.utcnow()
+    db.commit(); db.refresh(c)
+    return _cotacao_to_dict(c)
+
+@app.post("/v1/eden/fornecedores/cotacoes/delete")
+def delete_cotacao(body: CotacaoGetIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
+    c = db.query(Cotacao).filter_by(id=body.id).first()
+    if not c: raise HTTPException(404, "Não encontrado")
+    c.ativo = False; db.commit()
     return {"ok": True}

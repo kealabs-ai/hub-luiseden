@@ -148,15 +148,34 @@ def get_db():
     for db in db_manager.get_db():
         yield db
 
+def _ensure_admin_user(db: Session):
+    admin = db.query(Usuario).filter_by(email="admin@luiseden.com.br").first()
+    if not admin:
+        db.add(Usuario(nome="Admin", email="admin@luiseden.com.br",
+                       senha_hash=_hash("admin123"), role=RoleEnum.admin))
+        db.commit()
+        return
+
+    updated = False
+    if admin.role != RoleEnum.admin:
+        admin.role = RoleEnum.admin
+        updated = True
+    if not admin.ativo:
+        admin.ativo = True
+        updated = True
+    if not _verify("admin123", admin.senha_hash):
+        admin.senha_hash = _hash("admin123")
+        updated = True
+
+    if updated:
+        db.commit()
+
+
 def _init_db():
     try:
         Base.metadata.create_all(db_manager.engine)
         with SessionLocal() as db:
-            admin = db.query(Usuario).filter_by(email="admin@luiseden.com.br").first()
-            if not admin:
-                db.add(Usuario(nome="Admin", email="admin@luiseden.com.br",
-                               senha_hash=_hash("admin123"), role=RoleEnum.admin))
-                db.commit()
+            _ensure_admin_user(db)
     except Exception as e:
         print(f"[ERRO] DB init: {e}")
         raise
