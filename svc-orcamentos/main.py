@@ -1,6 +1,6 @@
 import os, uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -64,11 +64,18 @@ def startup_event():
 def health():
     return {"status": "ok", "service": "svc-orcamentos"}
 
+class ItemOrcamentoIn(BaseModel):
+    descricao: str
+    quantidade: int = 1
+    precoCents: int = 0
+
 class OrcamentoIn(BaseModel):
     clienteNome: Optional[str] = None
     descricao: Optional[str] = None
     totalCents: int = 0
+    status: str = "pendente"
     validade: Optional[str] = None
+    itens: Optional[List[ItemOrcamentoIn]] = None
 
 class OrcamentoUpdate(BaseModel):
     id: str
@@ -81,43 +88,100 @@ class OrcamentoUpdate(BaseModel):
 class OrcamentoGetIn(BaseModel):
     id: str
 
-def _to_dict(o: Orcamento):
-    return {"id": o.id, "usuarioId": o.usuario_id, "clienteNome": o.cliente_nome,
-            "descricao": o.descricao, "totalCents": o.total_cents, "status": o.status,
-            "validade": o.validade, "createdAt": o.created_at.isoformat(), "updatedAt": o.updated_at.isoformat()}
+def _item_to_dict(item: ItemOrcamento):
+    return {
+        "id": item.id,
+        "orcamentoId": item.orcamento_id,
+        "descricao": item.descricao,
+        "quantidade": item.quantidade,
+        "precoCents": item.preco_cents
+    }
+
+def _to_dict(o: Orcamento, items: List[ItemOrcamento] = None):
+    result = {
+        "id": o.id,
+        "usuarioId": o.usuario_id,
+        "clienteNome": o.cliente_nome,
+        "descricao": o.descricao,
+        "totalCents": o.total_cents,
+        "status": o.status,
+        "validade": o.validade,
+        "createdAt": o.created_at.isoformat(),
+        "updatedAt": o.updated_at.isoformat()
+    }
+    if items:
+        result["itens"] = [_item_to_dict(item) for item in items]
+    return result
 
 @app.get("/v1/eden/orcamentos")
 def list_orcamentos(db: Session = Depends(get_db), payload=Depends(verify_token)):
-    return [_to_dict(o) for o in db.query(Orcamento).order_by(Orcamento.created_at.desc()).all()]
+    orcamentos = db.query(Orcamento).order_by(Orcamento.created_at.desc()).all()
+    result = []
+    for o in orcamentos:
+        items = db.query(ItemOrcamento).filter_by(orcamento_id=o.id).all()
+        result.append(_to_dict(o, items))
+    return result
 
 @app.post("/v1/eden/orcamentos/get")
 def get_orcamento(body: OrcamentoGetIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
     o = db.query(Orcamento).filter_by(id=body.id).first()
     if not o: raise HTTPException(404, "Não encontrado")
-    return _to_dict(o)
+    items = db.query(ItemOrcamento).filter_by(orcamento_id=o.id).all()
+    return _to_dict(o, items)
 
 @app.post("/v1/eden/orcamentos", status_code=201)
 def create_orcamento(body: OrcamentoIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
-    o = Orcamento(usuario_id=payload["sub"], cliente_nome=body.clienteNome,
-                  descricao=body.descricao, total_cents=body.totalCents, validade=body.validade)
-    db.add(o); db.commit(); db.refresh(o)
-    return _to_dict(o)
+    o = Orcamento(
+        usuario_id=payload["sub"],
+        cliente_nome=body.clienteNome,
+        descricao=body.descricao,
+        total_cents=body.totalCents,
+        status=body.status,
+        validade=body.validade
+    )
+    db.add(o)
+    db.commit()
+    db.refresh(o)
+    
+    # Salvar itens do orçamento
+    items = []
+    if body.itens:
+        for item_data in body.itens:
+            item = ItemOrcamento(
+                orcamento_id=o.id,
+                descricao=item_data.descricao,
+                quantidade=item_data.quantidade,
+                preco_cents=item_data.precoCents
+            )
+            db.add(item)
+            items.append(item)
+        db.commit()
+    
+    return _to_dict(o, items)
 
 @app.post("/v1/eden/orcamentos/update")
 def update_orcamento(body: OrcamentoUpdate, db: Session = Depends(get_db), payload=Depends(verify_token)):
     o = db.query(Orcamento).filter_by(id=body.id).first()
     if not o: raise HTTPException(404, "Não encontrado")
+    
     data = body.model_dump(exclude_none=True, exclude={"id"})
     if "clienteNome" in data: o.cliente_nome = data.pop("clienteNome")
     if "totalCents"  in data: o.total_cents  = data.pop("totalCents")
     for k, v in data.items(): setattr(o, k, v)
     o.updated_at = datetime.utcnow()
-    db.commit(); db.refresh(o)
-    return _to_dict(o)
+    db.commit()
+    db.refresh(o)
+    
+    items = db.query(ItemOrcamento).filter_by(orcamento_id=o.id).all()
+    return _to_dict(o, items)
 
 @app.post("/v1/eden/orcamentos/delete")
 def delete_orcamento(body: OrcamentoGetIn, db: Session = Depends(get_db), payload=Depends(verify_token)):
     o = db.query(Orcamento).filter_by(id=body.id).first()
     if not o: raise HTTPException(404, "Não encontrado")
-    db.delete(o); db.commit()
+    
+    # Deletar itens do orçamento
+    db.query(ItemOrcamento).filter_by(orcamento_id=o.id).delete()
+    db.delete(o)
+    db.commit()
     return {"ok": True}
