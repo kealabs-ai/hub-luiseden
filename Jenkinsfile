@@ -36,7 +36,7 @@ pipeline {
 
                     for SVC in svc-auth svc-catalogo svc-vendas svc-financeiro svc-orcamentos svc-manutencao svc-fornecedores svc-usuarios svc-fiscal; do
                         mkdir -p $DEPLOY_PATH/$SVC
-                        cp -f $WORKSPACE/$SVC/main.py         $DEPLOY_PATH/$SVC/main.py
+                        cp -f $WORKSPACE/$SVC/*.py            $DEPLOY_PATH/$SVC/
                         cp -f $WORKSPACE/$SVC/Dockerfile      $DEPLOY_PATH/$SVC/Dockerfile
                         cp -f $WORKSPACE/$SVC/requirements.txt $DEPLOY_PATH/$SVC/requirements.txt
                     done
