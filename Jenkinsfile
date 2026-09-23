@@ -34,7 +34,7 @@ pipeline {
                     mkdir -p $DEPLOY_PATH/knowledge
                     cp -f $WORKSPACE/knowledge/*.md $DEPLOY_PATH/knowledge/
 
-                    for SVC in svc-auth svc-catalogo svc-vendas svc-financeiro svc-orcamentos svc-manutencao svc-fornecedores svc-usuarios; do
+                    for SVC in svc-auth svc-catalogo svc-vendas svc-financeiro svc-orcamentos svc-manutencao svc-fornecedores svc-usuarios svc-fiscal; do
                         mkdir -p $DEPLOY_PATH/$SVC
                         cp -f $WORKSPACE/$SVC/main.py         $DEPLOY_PATH/$SVC/main.py
                         cp -f $WORKSPACE/$SVC/Dockerfile      $DEPLOY_PATH/$SVC/Dockerfile
@@ -110,8 +110,8 @@ EOF
                     $DOCKER network inspect easypanel >/dev/null 2>&1 || \
                         $DOCKER network create easypanel
 
-                    echo "▶ Liberando portas 9000-9008 se ocupadas..."
-                    for PORT in 9000 9001 9002 9003 9004 9005 9006 9007 9008; do
+                    echo "▶ Liberando portas 9000-9010 se ocupadas..."
+                    for PORT in 9000 9001 9002 9003 9004 9005 9006 9007 9008 9009 9010; do
                         CID=$(${DOCKER} ps -q --filter "publish=${PORT}" 2>/dev/null || true)
                         if [ -n "$CID" ]; then
                             echo "  Parando container na porta ${PORT}..."
@@ -136,7 +136,7 @@ EOF
                 sh '''
                     echo "▶ Aguardando containers ficarem healthy..."
 
-                    for CONTAINER in hubluiseden eden-svc-auth eden-svc-catalogo eden-svc-vendas eden-svc-financeiro eden-svc-orcamentos eden-svc-manutencao eden-svc-fornecedores eden-svc-usuarios; do
+                    for CONTAINER in hubluiseden eden-svc-auth eden-svc-catalogo eden-svc-vendas eden-svc-financeiro eden-svc-orcamentos eden-svc-manutencao eden-svc-fornecedores eden-svc-usuarios eden-svc-clientes eden-svc-fiscal; do
                         echo "  Verificando $CONTAINER..."
                         for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18; do
                             HEALTH_STATUS=$($DOCKER inspect --format="{{.State.Health.Status}}" $CONTAINER 2>/dev/null || echo "none")

@@ -362,6 +362,42 @@ services:
       - easypanel
       - eden-net
 
+  svc-fiscal:
+    build: ./svc-fiscal
+    container_name: eden-svc-fiscal
+    ports:
+      - "9010:8000"
+    environment:
+      - luis_ed_DB_HOST=${luis_ed_DB_HOST}
+      - luis_ed_DB_PORT=${luis_ed_DB_PORT}
+      - luis_ed_DB_NAME=${luis_ed_DB_NAME}
+      - luis_ed_DB_USER=${luis_ed_DB_USER}
+      - luis_ed_DB_PASSWORD=${luis_ed_DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=easypanel"
+      - "traefik.http.routers.eden-fiscal.rule=Host(`srv1023256.hstgr.cloud`) && PathPrefix(`/v1/eden/fiscal`)"
+      - "traefik.http.routers.eden-fiscal.entrypoints=https"
+      - "traefik.http.routers.eden-fiscal.tls=true"
+      - "traefik.http.routers.eden-fiscal.service=eden-fiscal"
+      - "traefik.http.services.eden-fiscal.loadbalancer.server.port=8000"
+      - "traefik.http.routers.eden-fiscal.middlewares=eden-cors"
+      - "traefik.http.routers.eden-fiscal.priority=100"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolalloworiginlist=https://srv1023256.hstgr.cloud,https://peru-lemur-870410.hostingersite.com,http://localhost:5173"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.eden-cors.headers.accesscontrolallowcredentials=true"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - easypanel
+      - eden-net
+
 networks:
   easypanel:
     external: true
