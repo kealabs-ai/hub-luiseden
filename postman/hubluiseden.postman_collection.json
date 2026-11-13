@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "HubLuisEden API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": ["var r = pm.response.json(); pm.collectionVariables.set('token', r.accessToken);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/eden/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\": \"admin@luiseden.com.br\", \"senha\": \"admin123\"}" }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/eden/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catálogo",
+      "item": [
+        { "name": "Listar plantas", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/catalogo", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Criar planta", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/catalogo", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"nome\": \"Samambaia\", \"categoria\": \"Folhagem\", \"precoCents\": 2500, \"estoque\": 10}" } } },
+        { "name": "Buscar planta", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/catalogo/get", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<planta_id>\"}" } } },
+        { "name": "Atualizar planta", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/catalogo/update", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<planta_id>\", \"estoque\": 20}" } } },
+        { "name": "Deletar planta", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/catalogo/delete", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<planta_id>\"}" } } }
+      ]
+    },
+    {
+      "name": "Vendas",
+      "item": [
+        { "name": "Listar vendas", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/vendas", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Dashboard vendas", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/vendas/dashboard", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Criar venda", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/vendas", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"clienteNome\": \"João Silva\", \"totalCents\": 5000, \"status\": \"concluida\"}" } } },
+        { "name": "Buscar venda", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/vendas/get", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<venda_id>\"}" } } },
+        { "name": "Atualizar venda", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/vendas/update", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<venda_id>\", \"status\": \"cancelada\"}" } } },
+        { "name": "Deletar venda", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/vendas/delete", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<venda_id>\"}" } } }
+      ]
+    },
+    {
+      "name": "Financeiro",
+      "item": [
+        { "name": "Listar transações", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/financeiro", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Dashboard financeiro", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/financeiro/dashboard", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Criar transação", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/financeiro", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"tipo\": \"entrada\", \"categoria\": \"Venda\", \"valorCents\": 5000, \"data\": \"2025-01-15\"}" } } },
+        { "name": "Atualizar transação", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/financeiro/update", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<transacao_id>\", \"valorCents\": 6000}" } } },
+        { "name": "Deletar transação", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/financeiro/delete", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<transacao_id>\"}" } } }
+      ]
+    },
+    {
+      "name": "Orçamentos",
+      "item": [
+        { "name": "Listar orçamentos", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/orcamentos", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Criar orçamento", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/orcamentos", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"clienteNome\": \"Maria\", \"descricao\": \"Jardim frontal\", \"totalCents\": 150000, \"validade\": \"2025-02-01\"}" } } },
+        { "name": "Buscar orçamento", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/orcamentos/get", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<orcamento_id>\"}" } } },
+        { "name": "Atualizar orçamento", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/orcamentos/update", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<orcamento_id>\", \"status\": \"aprovado\"}" } } },
+        { "name": "Deletar orçamento", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/orcamentos/delete", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<orcamento_id>\"}" } } }
+      ]
+    },
+    {
+      "name": "Manutenção",
+      "item": [
+        { "name": "Listar manutenções", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/manutencao", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Criar manutenção", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/manutencao", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"titulo\": \"Poda mensal\", \"dataAgendada\": \"2025-01-20\", \"status\": \"agendada\"}" } } },
+        { "name": "Buscar manutenção", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/manutencao/get", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<manutencao_id>\"}" } } },
+        { "name": "Atualizar manutenção", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/manutencao/update", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<manutencao_id>\", \"status\": \"concluida\"}" } } },
+        { "name": "Deletar manutenção", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/manutencao/delete", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<manutencao_id>\"}" } } }
+      ]
+    },
+    {
+      "name": "Fornecedores",
+      "item": [
+        { "name": "Listar fornecedores", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/fornecedores", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Criar fornecedor", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/fornecedores", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"nome\": \"Viveiro Verde\", \"telefone\": \"11999999999\", \"categoria\": \"Plantas\"}" } } },
+        { "name": "Buscar fornecedor", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/fornecedores/get", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<fornecedor_id>\"}" } } },
+        { "name": "Atualizar fornecedor", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/fornecedores/update", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<fornecedor_id>\", \"telefone\": \"11888888888\"}" } } },
+        { "name": "Deletar fornecedor", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/fornecedores/delete", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<fornecedor_id>\"}" } } }
+      ]
+    },
+    {
+      "name": "Usuários",
+      "item": [
+        { "name": "Listar usuários", "request": { "method": "GET", "url": "{{base_url}}/v1/eden/usuarios", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Criar usuário", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/usuarios", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"nome\": \"Operador\", \"email\": \"operador@luiseden.com.br\", \"senha\": \"senha123\", \"role\": \"operador\"}" } } },
+        { "name": "Buscar usuário", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/usuarios/get", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<usuario_id>\"}" } } },
+        { "name": "Atualizar usuário", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/usuarios/update", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<usuario_id>\", \"nome\": \"Novo Nome\"}" } } },
+        { "name": "Trocar senha (admin)", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/usuarios/senha", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<usuario_id>\", \"senha\": \"novaSenha123\"}" } } },
+        { "name": "Trocar minha senha", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/usuarios/minha-senha", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<meu_id>\", \"senha\": \"novaSenha123\"}" } } },
+        { "name": "Deletar usuário", "request": { "method": "POST", "url": "{{base_url}}/v1/eden/usuarios/delete", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"id\": \"<usuario_id>\"}" } } }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        { "name": "Health check", "request": { "method": "GET", "url": "{{base_url}}/health" } }
+      ]
+    }
+  ]
+}

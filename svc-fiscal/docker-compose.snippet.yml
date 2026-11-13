@@ -1,0 +1,30 @@
+# Adicione esta seção ao seu docker-compose.yml existente
+
+svc-fiscal:
+  build:
+    context: ./svc-fiscal
+    dockerfile: Dockerfile
+  container_name: svc-fiscal
+  ports:
+    - "8009:8000"
+  environment:
+    - DB_HOST=db
+    - DB_PORT=3306
+    - DB_USER=${DB_USER:-root}
+    - DB_PASSWORD=${DB_PASSWORD:-senha}
+    - DB_NAME=${DB_NAME:-hub_luis_eden}
+    - SECRET_KEY=${SECRET_KEY:-changeme-secret-key}
+  volumes:
+    - ./svc-fiscal:/app
+    - /etc/ssl/certs:/etc/ssl/certs:ro  # Certificados digitais
+  depends_on:
+    - db
+  networks:
+    - hub-network
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
