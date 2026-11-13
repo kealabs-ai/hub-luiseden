@@ -97,7 +97,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://peru-lemur-870410.hostingersite.com",
-        "https://srv1023256.hstgr.cloud",
         "http://localhost:5173",
         "http://localhost:3000",
     ],
